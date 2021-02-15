@@ -18,12 +18,21 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ParseDex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h">
+    <ClInclude Include="ParseDex.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="DexFile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

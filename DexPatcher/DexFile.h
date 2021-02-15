@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2008 The Android Open Source Project
  *
@@ -14,21 +16,21 @@
  * limitations under the License.
  */
 
-/*
- * Access .dex (Dalvik Executable Format) files.  The code here assumes that
- * the DEX file has been rewritten (byte-swapped, word-aligned) and that
- * the contents can be directly accessed as a collection of C arrays.  Please
- * see docs/dalvik/dex-format.html for a detailed description.
- *
- * The structure and field names were chosen to match those in the DEX spec.
- *
- * It's generally assumed that the DEX file will be stored in shared memory,
- * obviating the need to copy code and constant pool entries into newly
- * allocated storage.  Maintaining local pointers to items in the shared area
- * is valid and encouraged.
- *
- * All memory-mapped structures are 32-bit aligned unless otherwise noted.
- */
+ /*
+  * Access .dex (Dalvik Executable Format) files.  The code here assumes that
+  * the DEX file has been rewritten (byte-swapped, word-aligned) and that
+  * the contents can be directly accessed as a collection of C arrays.  Please
+  * see docs/dalvik/dex-format.html for a detailed description.
+  *
+  * The structure and field names were chosen to match those in the DEX spec.
+  *
+  * It's generally assumed that the DEX file will be stored in shared memory,
+  * obviating the need to copy code and constant pool entries into newly
+  * allocated storage.  Maintaining local pointers to items in the shared area
+  * is valid and encouraged.
+  *
+  * All memory-mapped structures are 32-bit aligned unless otherwise noted.
+  */
 
 #ifndef LIBDEX_DEXFILE_H_
 #define LIBDEX_DEXFILE_H_
@@ -42,14 +44,14 @@
 #include <stdio.h>
 #include <assert.h>
 
-/*
- * If "very verbose" logging is enabled, make it equivalent to ALOGV.
- * Otherwise, make it disappear.
- *
- * Define this above the #include "Dalvik.h" to enable for only a
- * single file.
- */
-/* #define VERY_VERBOSE_LOG */
+  /*
+   * If "very verbose" logging is enabled, make it equivalent to ALOGV.
+   * Otherwise, make it disappear.
+   *
+   * Define this above the #include "Dalvik.h" to enable for only a
+   * single file.
+   */
+   /* #define VERY_VERBOSE_LOG */
 #if defined(VERY_VERBOSE_LOG)
 # define LOGVV      ALOGV
 # define IF_LOGVV() IF_ALOGV()
@@ -77,12 +79,12 @@ typedef int64_t             s8;
  * it was built with optimizations enabled.
  */
 #ifndef _DEX_GEN_INLINES             /* only defined by DexInlines.c */
-# define DEX_INLINE extern inline
+# define DEX_INLINE extern __inline
 #else
 # define DEX_INLINE
 #endif
 
-/* DEX file magic number */
+ /* DEX file magic number */
 #define DEX_MAGIC       "dex\n"
 
 /* The version for android N, encoded in 4 bytes of ASCII. This differentiates dex files that may
@@ -90,17 +92,17 @@ typedef int64_t             s8;
  */
 #define DEX_MAGIC_VERS_37  "037\0"
 
-/* The version for android O, encoded in 4 bytes of ASCII. This differentiates dex files that may
- * contain invoke-custom, invoke-polymorphic, call-sites, and method handles.
- */
+ /* The version for android O, encoded in 4 bytes of ASCII. This differentiates dex files that may
+  * contain invoke-custom, invoke-polymorphic, call-sites, and method handles.
+  */
 #define DEX_MAGIC_VERS_38  "038\0"
 
-/* The version for android P, encoded in 4 bytes of ASCII. This differentiates dex files that may
- * contain const-method-handle and const-proto.
- */
+  /* The version for android P, encoded in 4 bytes of ASCII. This differentiates dex files that may
+   * contain const-method-handle and const-proto.
+   */
 #define DEX_MAGIC_VERS_39  "039\0"
 
-/* current version, encoded in 4 bytes of ASCII */
+   /* current version, encoded in 4 bytes of ASCII */
 #define DEX_MAGIC_VERS  "036\0"
 
 /*
@@ -109,7 +111,7 @@ typedef int64_t             s8;
  */
 #define DEX_MAGIC_VERS_API_13  "035\0"
 
-/* same, but for optimized DEX header */
+ /* same, but for optimized DEX header */
 #define DEX_OPT_MAGIC   "dey\n"
 #define DEX_OPT_MAGIC_VERS  "036\0"
 
@@ -118,29 +120,31 @@ typedef int64_t             s8;
 /*
  * 160-bit SHA-1 digest.
  */
-enum { kSHA1DigestLen = 20,
-       kSHA1DigestOutputLen = kSHA1DigestLen*2 +1 };
+enum {
+	kSHA1DigestLen = 20,
+	kSHA1DigestOutputLen = kSHA1DigestLen * 2 + 1
+};
 
 /* general constants */
 enum {
-    kDexEndianConstant = 0x12345678,    /* the endianness indicator */
-    kDexNoIndex = 0xffffffff,           /* not a valid index value */
+	kDexEndianConstant = 0x12345678,    /* the endianness indicator */
+	kDexNoIndex = 0xffffffff,           /* not a valid index value */
 };
 
 /*
  * Enumeration of all the primitive types.
  */
 enum PrimitiveType {
-    PRIM_NOT        = 0,       /* value is a reference type, not a primitive type */
-    PRIM_VOID       = 1,
-    PRIM_BOOLEAN    = 2,
-    PRIM_BYTE       = 3,
-    PRIM_SHORT      = 4,
-    PRIM_CHAR       = 5,
-    PRIM_INT        = 6,
-    PRIM_LONG       = 7,
-    PRIM_FLOAT      = 8,
-    PRIM_DOUBLE     = 9,
+	PRIM_NOT = 0,       /* value is a reference type, not a primitive type */
+	PRIM_VOID = 1,
+	PRIM_BOOLEAN = 2,
+	PRIM_BYTE = 3,
+	PRIM_SHORT = 4,
+	PRIM_CHAR = 5,
+	PRIM_INT = 6,
+	PRIM_LONG = 7,
+	PRIM_FLOAT = 8,
+	PRIM_DOUBLE = 9,
 };
 
 /*
@@ -150,313 +154,337 @@ enum PrimitiveType {
  * enum.
  */
 enum {
-    ACC_PUBLIC       = 0x00000001,       // class, field, method, ic
-    ACC_PRIVATE      = 0x00000002,       // field, method, ic
-    ACC_PROTECTED    = 0x00000004,       // field, method, ic
-    ACC_STATIC       = 0x00000008,       // field, method, ic
-    ACC_FINAL        = 0x00000010,       // class, field, method, ic
-    ACC_SYNCHRONIZED = 0x00000020,       // method (only allowed on natives)
-    ACC_SUPER        = 0x00000020,       // class (not used in Dalvik)
-    ACC_VOLATILE     = 0x00000040,       // field
-    ACC_BRIDGE       = 0x00000040,       // method (1.5)
-    ACC_TRANSIENT    = 0x00000080,       // field
-    ACC_VARARGS      = 0x00000080,       // method (1.5)
-    ACC_NATIVE       = 0x00000100,       // method
-    ACC_INTERFACE    = 0x00000200,       // class, ic
-    ACC_ABSTRACT     = 0x00000400,       // class, method, ic
-    ACC_STRICT       = 0x00000800,       // method
-    ACC_SYNTHETIC    = 0x00001000,       // field, method, ic
-    ACC_ANNOTATION   = 0x00002000,       // class, ic (1.5)
-    ACC_ENUM         = 0x00004000,       // class, field, ic (1.5)
-    ACC_CONSTRUCTOR  = 0x00010000,       // method (Dalvik only)
-    ACC_DECLARED_SYNCHRONIZED =
-                       0x00020000,       // method (Dalvik only)
-    ACC_CLASS_MASK =
-        (ACC_PUBLIC | ACC_FINAL | ACC_INTERFACE | ACC_ABSTRACT
-                | ACC_SYNTHETIC | ACC_ANNOTATION | ACC_ENUM),
-    ACC_INNER_CLASS_MASK =
-        (ACC_CLASS_MASK | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC),
-    ACC_FIELD_MASK =
-        (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL
-                | ACC_VOLATILE | ACC_TRANSIENT | ACC_SYNTHETIC | ACC_ENUM),
-    ACC_METHOD_MASK =
-        (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL
-                | ACC_SYNCHRONIZED | ACC_BRIDGE | ACC_VARARGS | ACC_NATIVE
-                | ACC_ABSTRACT | ACC_STRICT | ACC_SYNTHETIC | ACC_CONSTRUCTOR
-                | ACC_DECLARED_SYNCHRONIZED),
+	ACC_PUBLIC = 0x00000001,       // class, field, method, ic
+	ACC_PRIVATE = 0x00000002,       // field, method, ic
+	ACC_PROTECTED = 0x00000004,       // field, method, ic
+	ACC_STATIC = 0x00000008,       // field, method, ic
+	ACC_FINAL = 0x00000010,       // class, field, method, ic
+	ACC_SYNCHRONIZED = 0x00000020,       // method (only allowed on natives)
+	ACC_SUPER = 0x00000020,       // class (not used in Dalvik)
+	ACC_VOLATILE = 0x00000040,       // field
+	ACC_BRIDGE = 0x00000040,       // method (1.5)
+	ACC_TRANSIENT = 0x00000080,       // field
+	ACC_VARARGS = 0x00000080,       // method (1.5)
+	ACC_NATIVE = 0x00000100,       // method
+	ACC_INTERFACE = 0x00000200,       // class, ic
+	ACC_ABSTRACT = 0x00000400,       // class, method, ic
+	ACC_STRICT = 0x00000800,       // method
+	ACC_SYNTHETIC = 0x00001000,       // field, method, ic
+	ACC_ANNOTATION = 0x00002000,       // class, ic (1.5)
+	ACC_ENUM = 0x00004000,       // class, field, ic (1.5)
+	ACC_CONSTRUCTOR = 0x00010000,       // method (Dalvik only)
+	ACC_DECLARED_SYNCHRONIZED =
+	0x00020000,       // method (Dalvik only)
+	ACC_CLASS_MASK =
+	(ACC_PUBLIC | ACC_FINAL | ACC_INTERFACE | ACC_ABSTRACT
+		| ACC_SYNTHETIC | ACC_ANNOTATION | ACC_ENUM),
+	ACC_INNER_CLASS_MASK =
+	(ACC_CLASS_MASK | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC),
+	ACC_FIELD_MASK =
+	(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL
+		| ACC_VOLATILE | ACC_TRANSIENT | ACC_SYNTHETIC | ACC_ENUM),
+	ACC_METHOD_MASK =
+	(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL
+		| ACC_SYNCHRONIZED | ACC_BRIDGE | ACC_VARARGS | ACC_NATIVE
+		| ACC_ABSTRACT | ACC_STRICT | ACC_SYNTHETIC | ACC_CONSTRUCTOR
+		| ACC_DECLARED_SYNCHRONIZED),
 };
 
 /* annotation constants */
 enum {
-    kDexVisibilityBuild         = 0x00,     /* annotation visibility */
-    kDexVisibilityRuntime       = 0x01,
-    kDexVisibilitySystem        = 0x02,
+	kDexVisibilityBuild = 0x00,     /* annotation visibility */
+	kDexVisibilityRuntime = 0x01,
+	kDexVisibilitySystem = 0x02,
 
-    kDexAnnotationByte          = 0x00,
-    kDexAnnotationShort         = 0x02,
-    kDexAnnotationChar          = 0x03,
-    kDexAnnotationInt           = 0x04,
-    kDexAnnotationLong          = 0x06,
-    kDexAnnotationFloat         = 0x10,
-    kDexAnnotationDouble        = 0x11,
-    kDexAnnotationMethodType    = 0x15,
-    kDexAnnotationMethodHandle  = 0x16,
-    kDexAnnotationString        = 0x17,
-    kDexAnnotationType          = 0x18,
-    kDexAnnotationField         = 0x19,
-    kDexAnnotationMethod        = 0x1a,
-    kDexAnnotationEnum          = 0x1b,
-    kDexAnnotationArray         = 0x1c,
-    kDexAnnotationAnnotation    = 0x1d,
-    kDexAnnotationNull          = 0x1e,
-    kDexAnnotationBoolean       = 0x1f,
+	kDexAnnotationByte = 0x00,
+	kDexAnnotationShort = 0x02,
+	kDexAnnotationChar = 0x03,
+	kDexAnnotationInt = 0x04,
+	kDexAnnotationLong = 0x06,
+	kDexAnnotationFloat = 0x10,
+	kDexAnnotationDouble = 0x11,
+	kDexAnnotationMethodType = 0x15,
+	kDexAnnotationMethodHandle = 0x16,
+	kDexAnnotationString = 0x17,
+	kDexAnnotationType = 0x18,
+	kDexAnnotationField = 0x19,
+	kDexAnnotationMethod = 0x1a,
+	kDexAnnotationEnum = 0x1b,
+	kDexAnnotationArray = 0x1c,
+	kDexAnnotationAnnotation = 0x1d,
+	kDexAnnotationNull = 0x1e,
+	kDexAnnotationBoolean = 0x1f,
 
-    kDexAnnotationValueTypeMask = 0x1f,     /* low 5 bits */
-    kDexAnnotationValueArgShift = 5,
+	kDexAnnotationValueTypeMask = 0x1f,     /* low 5 bits */
+	kDexAnnotationValueArgShift = 5,
 };
 
 /* map item type codes */
 enum {
-    kDexTypeHeaderItem               = 0x0000,
-    kDexTypeStringIdItem             = 0x0001,
-    kDexTypeTypeIdItem               = 0x0002,
-    kDexTypeProtoIdItem              = 0x0003,
-    kDexTypeFieldIdItem              = 0x0004,
-    kDexTypeMethodIdItem             = 0x0005,
-    kDexTypeClassDefItem             = 0x0006,
-    kDexTypeCallSiteIdItem           = 0x0007,
-    kDexTypeMethodHandleItem         = 0x0008,
-    kDexTypeMapList                  = 0x1000,
-    kDexTypeTypeList                 = 0x1001,
-    kDexTypeAnnotationSetRefList     = 0x1002,
-    kDexTypeAnnotationSetItem        = 0x1003,
-    kDexTypeClassDataItem            = 0x2000,
-    kDexTypeCodeItem                 = 0x2001,
-    kDexTypeStringDataItem           = 0x2002,
-    kDexTypeDebugInfoItem            = 0x2003,
-    kDexTypeAnnotationItem           = 0x2004,
-    kDexTypeEncodedArrayItem         = 0x2005,
-    kDexTypeAnnotationsDirectoryItem = 0x2006,
+	kDexTypeHeaderItem = 0x0000,
+	kDexTypeStringIdItem = 0x0001,
+	kDexTypeTypeIdItem = 0x0002,
+	kDexTypeProtoIdItem = 0x0003,
+	kDexTypeFieldIdItem = 0x0004,
+	kDexTypeMethodIdItem = 0x0005,
+	kDexTypeClassDefItem = 0x0006,
+	kDexTypeCallSiteIdItem = 0x0007,
+	kDexTypeMethodHandleItem = 0x0008,
+	kDexTypeMapList = 0x1000,
+	kDexTypeTypeList = 0x1001,
+	kDexTypeAnnotationSetRefList = 0x1002,
+	kDexTypeAnnotationSetItem = 0x1003,
+	kDexTypeClassDataItem = 0x2000,
+	kDexTypeCodeItem = 0x2001,
+	kDexTypeStringDataItem = 0x2002,
+	kDexTypeDebugInfoItem = 0x2003,
+	kDexTypeAnnotationItem = 0x2004,
+	kDexTypeEncodedArrayItem = 0x2005,
+	kDexTypeAnnotationsDirectoryItem = 0x2006,
 };
 
 /* auxillary data section chunk codes */
 enum {
-    kDexChunkClassLookup            = 0x434c4b50,   /* CLKP */
-    kDexChunkRegisterMaps           = 0x524d4150,   /* RMAP */
+	kDexChunkClassLookup = 0x434c4b50,   /* CLKP */
+	kDexChunkRegisterMaps = 0x524d4150,   /* RMAP */
 
-    kDexChunkEnd                    = 0x41454e44,   /* AEND */
+	kDexChunkEnd = 0x41454e44,   /* AEND */
 };
 
 /* debug info opcodes and constants */
 enum {
-    DBG_END_SEQUENCE         = 0x00,
-    DBG_ADVANCE_PC           = 0x01,
-    DBG_ADVANCE_LINE         = 0x02,
-    DBG_START_LOCAL          = 0x03,
-    DBG_START_LOCAL_EXTENDED = 0x04,
-    DBG_END_LOCAL            = 0x05,
-    DBG_RESTART_LOCAL        = 0x06,
-    DBG_SET_PROLOGUE_END     = 0x07,
-    DBG_SET_EPILOGUE_BEGIN   = 0x08,
-    DBG_SET_FILE             = 0x09,
-    DBG_FIRST_SPECIAL        = 0x0a,
-    DBG_LINE_BASE            = -4,
-    DBG_LINE_RANGE           = 15,
+	DBG_END_SEQUENCE = 0x00,
+	DBG_ADVANCE_PC = 0x01,
+	DBG_ADVANCE_LINE = 0x02,
+	DBG_START_LOCAL = 0x03,
+	DBG_START_LOCAL_EXTENDED = 0x04,
+	DBG_END_LOCAL = 0x05,
+	DBG_RESTART_LOCAL = 0x06,
+	DBG_SET_PROLOGUE_END = 0x07,
+	DBG_SET_EPILOGUE_BEGIN = 0x08,
+	DBG_SET_FILE = 0x09,
+	DBG_FIRST_SPECIAL = 0x0a,
+	DBG_LINE_BASE = -4,
+	DBG_LINE_RANGE = 15,
+};
+
+struct EncodedField
+{
+	uint32_t filed_idx_diff; // index into filed_ids for ID of this filed
+	uint32_t access_flags; // access flags like public, static etc.
+};
+struct EncodedMethod
+{
+	uint32_t method_idx_diff;
+	uint32_t access_flags;
+	uint32_t code_off;
+};
+
+struct ClassDataItem
+{
+	uint32_t staticFiledsSize;
+	uint32_t instanceFieldsSize;
+	uint32_t directMethodsSize;
+	uint32_t virtualMethodsSize;
+	EncodedField* staticFields;
+	EncodedField* instanceFields;
+	EncodedMethod* directMethods;
+	EncodedMethod* virtualMethods;
 };
 
 /*
  * Direct-mapped "header_item" struct.
  */
 struct DexHeader {
-    u1  magic[8];       //å–å€¼å¿…é¡»æ˜¯å­—ç¬¦ä¸² "dex\n035\0" æˆ–è€…å­—èŠ‚byteæ•°ç»„ {0x64 0x65 0x78 0x0a 0x30 0x33 0x35 0x00}
-    u4  checksum;       //æ–‡ä»¶å†…å®¹çš„æ ¡éªŒå’Œ,ä¸åŒ…æ‹¬magicå’Œè‡ªå·±,ä¸»è¦ç”¨äºæ£€æŸ¥æ–‡ä»¶æ˜¯å¦æŸå
-    u1  signature[kSHA1DigestLen];      //ç­¾åä¿¡æ¯,ä¸åŒ…æ‹¬ magic\checksumå’Œè‡ªå·±
-    u4  fileSize;       //æ•´ä¸ªæ–‡ä»¶çš„é•¿åº¦,å•ä½ä¸ºå­—èŠ‚,åŒ…æ‹¬æ‰€æœ‰çš„å†…å®¹
-    u4  headerSize;     //é»˜è®¤æ˜¯0x70ä¸ªå­—èŠ‚
-    u4  endianTag;      //å¤§å°ç«¯æ ‡ç­¾ï¼Œæ ‡å‡†.dexæ–‡ä»¶ä¸ºå°ç«¯ï¼Œæ­¤é¡¹ä¸€èˆ¬å›ºå®šä¸º0x12345678å¸¸é‡
-    u4  linkSize;       //é“¾æ¥æ•°æ®çš„å¤§å°
-    u4  linkOff;        //é“¾æ¥æ•°æ®çš„åç§»å€¼
-    u4  mapOff;         //map itemçš„åç§»åœ°å€ï¼Œè¯¥itemå±äºdataåŒºé‡Œçš„å†…å®¹ï¼Œå€¼è¦å¤§äºç­‰äºdataOffçš„å¤§å°
-    u4  stringIdsSize;      //DEXä¸­ç”¨åˆ°çš„æ‰€æœ‰å­—ç¬¦ä¸²å†…å®¹çš„å¤§å°*
-    u4  stringIdsOff;       //DEXä¸­ç”¨åˆ°çš„æ‰€æœ‰å­—ç¬¦ä¸²å†…å®¹çš„åç§»é‡
-    u4  typeIdsSize;        //DEXä¸­ç±»å‹æ•°æ®ç»“æ„çš„å¤§å°
-    u4  typeIdsOff;         //DEXä¸­ç±»å‹æ•°æ®ç»“æ„çš„åç§»å€¼
-    u4  protoIdsSize;       //DEXä¸­çš„å…ƒæ•°æ®ä¿¡æ¯æ•°æ®ç»“æ„çš„å¤§å°
-    u4  protoIdsOff;        //DEXä¸­çš„å…ƒæ•°æ®ä¿¡æ¯æ•°æ®ç»“æ„çš„åç§»å€¼
-    u4  fieldIdsSize;       //DEXä¸­å­—æ®µä¿¡æ¯æ•°æ®ç»“æ„çš„å¤§å°
-    u4  fieldIdsOff;        //DEXä¸­å­—æ®µä¿¡æ¯æ•°æ®ç»“æ„çš„åç§»å€¼
-    u4  methodIdsSize;      //DEXä¸­æ–¹æ³•ä¿¡æ¯æ•°æ®ç»“æ„çš„å¤§å°
-    u4  methodIdsOff;       //DEXä¸­æ–¹æ³•ä¿¡æ¯æ•°æ®ç»“æ„çš„åç§»å€¼
-    u4  classDefsSize;      //DEXä¸­çš„ç±»ä¿¡æ¯æ•°æ®ç»“æ„çš„å¤§å°
-    u4  classDefsOff;       //DEXä¸­çš„ç±»ä¿¡æ¯æ•°æ®ç»“æ„çš„åç§»å€¼
-    u4  dataSize;           //DEXä¸­æ•°æ®åŒºåŸŸçš„ç»“æ„ä¿¡æ¯çš„å¤§å°
-    u4  dataOff;            //DEXä¸­æ•°æ®åŒºåŸŸçš„ç»“æ„ä¿¡æ¯çš„åç§»å€¼
+	u1  magic[8];       //È¡Öµ±ØĞëÊÇ×Ö·û´® "dex\n035\0" »òÕß×Ö½ÚbyteÊı×é {0x64 0x65 0x78 0x0a 0x30 0x33 0x35 0x00}
+	u4  checksum;       //ÎÄ¼şÄÚÈİµÄĞ£ÑéºÍ,²»°üÀ¨magicºÍ×Ô¼º,Ö÷ÒªÓÃÓÚ¼ì²éÎÄ¼şÊÇ·ñËğ»µ
+	u1  signature[kSHA1DigestLen];      //Ç©ÃûĞÅÏ¢,²»°üÀ¨ magic\checksumºÍ×Ô¼º
+	u4  fileSize;       //Õû¸öÎÄ¼şµÄ³¤¶È,µ¥Î»Îª×Ö½Ú,°üÀ¨ËùÓĞµÄÄÚÈİ
+	u4  headerSize;     //Ä¬ÈÏÊÇ0x70¸ö×Ö½Ú
+	u4  endianTag;      //´óĞ¡¶Ë±êÇ©£¬±ê×¼.dexÎÄ¼şÎªĞ¡¶Ë£¬´ËÏîÒ»°ã¹Ì¶¨Îª0x12345678³£Á¿
+	u4  linkSize;       //Á´½ÓÊı¾İµÄ´óĞ¡
+	u4  linkOff;        //Á´½ÓÊı¾İµÄÆ«ÒÆÖµ
+	u4  mapOff;         //map itemµÄÆ«ÒÆµØÖ·£¬¸ÃitemÊôÓÚdataÇøÀïµÄÄÚÈİ£¬ÖµÒª´óÓÚµÈÓÚdataOffµÄ´óĞ¡
+	u4  stringIdsSize;      //DEXÖĞÓÃµ½µÄËùÓĞ×Ö·û´®ÄÚÈİµÄ´óĞ¡*
+	u4  stringIdsOff;       //DEXÖĞÓÃµ½µÄËùÓĞ×Ö·û´®ÄÚÈİµÄÆ«ÒÆÁ¿
+	u4  typeIdsSize;        //DEXÖĞÀàĞÍÊı¾İ½á¹¹µÄ´óĞ¡
+	u4  typeIdsOff;         //DEXÖĞÀàĞÍÊı¾İ½á¹¹µÄÆ«ÒÆÖµ
+	u4  protoIdsSize;       //DEXÖĞµÄÔªÊı¾İĞÅÏ¢Êı¾İ½á¹¹µÄ´óĞ¡
+	u4  protoIdsOff;        //DEXÖĞµÄÔªÊı¾İĞÅÏ¢Êı¾İ½á¹¹µÄÆ«ÒÆÖµ
+	u4  fieldIdsSize;       //DEXÖĞ×Ö¶ÎĞÅÏ¢Êı¾İ½á¹¹µÄ´óĞ¡
+	u4  fieldIdsOff;        //DEXÖĞ×Ö¶ÎĞÅÏ¢Êı¾İ½á¹¹µÄÆ«ÒÆÖµ
+	u4  methodIdsSize;      //DEXÖĞ·½·¨ĞÅÏ¢Êı¾İ½á¹¹µÄ´óĞ¡
+	u4  methodIdsOff;       //DEXÖĞ·½·¨ĞÅÏ¢Êı¾İ½á¹¹µÄÆ«ÒÆÖµ
+	u4  classDefsSize;      //DEXÖĞµÄÀàĞÅÏ¢Êı¾İ½á¹¹µÄ´óĞ¡
+	u4  classDefsOff;       //DEXÖĞµÄÀàĞÅÏ¢Êı¾İ½á¹¹µÄÆ«ÒÆÖµ
+	u4  dataSize;           //DEXÖĞÊı¾İÇøÓòµÄ½á¹¹ĞÅÏ¢µÄ´óĞ¡
+	u4  dataOff;            //DEXÖĞÊı¾İÇøÓòµÄ½á¹¹ĞÅÏ¢µÄÆ«ÒÆÖµ
 };
 
 /*
  * Direct-mapped "map_item".
  */
 struct DexMapItem {
-    u2 type;              /* type code (see kDexType* above) */
-    u2 unused;
-    u4 size;              /* count of items of the indicated type */
-    u4 offset;            /* file offset to the start of data */
+	u2 type;              /* type code (see kDexType* above) */
+	u2 unused;
+	u4 size;              /* count of items of the indicated type */
+	u4 offset;            /* file offset to the start of data */
 };
 
 /*
  * Direct-mapped "map_list".
  */
 struct DexMapList {
-    u4  size;               /* #of entries in list */
-    DexMapItem list[1];     /* entries */
+	u4  size;               /* #of entries in list */
+	DexMapItem list[1];     /* entries */
 };
 
 /*
  * Direct-mapped "string_id_item".
  */
 struct DexStringId {
-    //ç”¨äºæŒ‡æ˜ string_data_item ä½ç½®æ–‡ä»¶çš„ä½ç½®
-    u4 stringDataOff;      /* file offset to string_data_item */
+	//ÓÃÓÚÖ¸Ã÷ string_data_item Î»ÖÃÎÄ¼şµÄÎ»ÖÃ
+	u4 stringDataOff;      /* file offset to string_data_item */
 };
 
 /*
  * Direct-mapped "type_id_item".
  */
 struct DexTypeId {
-    u4  descriptorIdx;      /* æŒ‡å‘string_idsçš„ç´¢å¼• */
+	u4  descriptorIdx;      /* Ö¸Ïòstring_idsµÄË÷Òı */
 };
 
 /*
  * Direct-mapped "field_id_item".
  */
 struct DexFieldId {
-    u2  classIdx;           /* fieldæ‰€å±çš„classç±»å‹ï¼Œclass_idxçš„å€¼æ—¶type_idsçš„ä¸€ä¸ªindexï¼ŒæŒ‡å‘æ‰€å±çš„ç±» */
-    u2  typeIdx;            /* fieldçš„ç±»å‹ï¼Œå€¼æ˜¯type_idsçš„ä¸€ä¸ªindex */
-    u4  nameIdx;            /* fieldçš„åç§°ï¼Œå®ƒçš„å€¼æ˜¯string_idsçš„ä¸€ä¸ªindex */
+	u2  classIdx;           /* fieldËùÊôµÄclassÀàĞÍ£¬class_idxµÄÖµÊ±type_idsµÄÒ»¸öindex£¬Ö¸ÏòËùÊôµÄÀà */
+	u2  typeIdx;            /* fieldµÄÀàĞÍ£¬ÖµÊÇtype_idsµÄÒ»¸öindex */
+	u4  nameIdx;            /* fieldµÄÃû³Æ£¬ËüµÄÖµÊÇstring_idsµÄÒ»¸öindex */
 };
 
 /*
  * Direct-mapped "method_id_item".
  */
 struct DexMethodId {
-    u2  classIdx;           /* methodæ‰€å±çš„classç±»å‹ï¼Œclass_idxçš„å€¼æ˜¯type_idsçš„ä¸€ä¸ªindexï¼Œå¿…é¡»æŒ‡å‘ä¸€ä¸ªclassç±»å‹ */
-    u2  protoIdx;           /* methodçš„åŸå‹ï¼ŒæŒ‡å‘proto_idsçš„ä¸€ä¸ªindex */
-    u4  nameIdx;            /* methodçš„åç§°ï¼Œå€¼ä¸ºstring_idsçš„ä¸€ä¸ªindex */
+	u2  classIdx;           /* methodËùÊôµÄclassÀàĞÍ£¬class_idxµÄÖµÊÇtype_idsµÄÒ»¸öindex£¬±ØĞëÖ¸ÏòÒ»¸öclassÀàĞÍ */
+	u2  protoIdx;           /* methodµÄÔ­ĞÍ£¬Ö¸Ïòproto_idsµÄÒ»¸öindex */
+	u4  nameIdx;            /* methodµÄÃû³Æ£¬ÖµÎªstring_idsµÄÒ»¸öindex */
 };
 
 /*
  * Direct-mapped "proto_id_item".
  */
 struct DexProtoId {
-    u4  shortyIdx;          /* å€¼ä¸ºä¸€ä¸ªstring_idsçš„indexå·ï¼Œç”¨æ¥è¯´æ˜è¯¥methodåŸå‹ */
-    u4  returnTypeIdx;      /* å€¼ä¸ºä¸€ä¸ªtype_idsçš„indexï¼Œè¡¨ç¤ºè¯¥methodåŸå‹çš„è¿”å›å€¼ç±»å‹ */
-    u4  parametersOff;      /* æŒ‡å®šmethodåŸå‹çš„å‚æ•°åˆ—è¡¨type_listï¼Œè‹¥methodæ²¡æœ‰å‚æ•°ï¼Œåˆ™å€¼ä¸º0. å‚æ•°çš„æ ¼å¼æ˜¯type_list */
+	u4  shortyIdx;          /* ÖµÎªÒ»¸östring_idsµÄindexºÅ£¬ÓÃÀ´ËµÃ÷¸ÃmethodÔ­ĞÍ */
+	u4  returnTypeIdx;      /* ÖµÎªÒ»¸ötype_idsµÄindex£¬±íÊ¾¸ÃmethodÔ­ĞÍµÄ·µ»ØÖµÀàĞÍ */
+	u4  parametersOff;      /* Ö¸¶¨methodÔ­ĞÍµÄ²ÎÊıÁĞ±ítype_list£¬ÈômethodÃ»ÓĞ²ÎÊı£¬ÔòÖµÎª0. ²ÎÊıµÄ¸ñÊ½ÊÇtype_list */
 };
 
 /*
  * Direct-mapped "class_def_item".
  */
 struct DexClassDef {
-    u4  classIdx;           /* æè¿°å…·ä½“çš„classç±»å‹ï¼Œå€¼æ˜¯type_idsçš„ä¸€ä¸ªindexï¼Œå€¼å¿…é¡»æ˜¯ä¸€ä¸ªclassç±»å‹ï¼Œä¸èƒ½æ˜¯æ•°ç»„æˆ–è€…åŸºæœ¬ç±»å‹ */
-    u4  accessFlags;        /* æè¿°classçš„è®¿é—®ç±»å‹ï¼Œå¦‚public,final,staticç­‰ */
-    u4  superclassIdx;      /* æè¿°çˆ¶ç±»çš„ç±»å‹ï¼Œå€¼å¿…é¡»æ˜¯ä¸€ä¸ªclassç±»å‹ï¼Œä¸èƒ½æ˜¯æ•°ç»„é›·å…´å›½æˆ–è€…åŸºæœ¬ç±»å‹ */
-    u4  interfacesOff;      /* å€¼ä¸ºåç§»åœ°å€ï¼Œè¢«æŒ‡å‘çš„æ•°æ®ç»“æ„ä¸ºtype_listï¼Œclassè‹¥æ²¡æœ‰interfacesï¼Œå€¼ä¸º0 */
-    u4  sourceFileIdx;      /* è¡¨ç¤ºæºä»£ç æ–‡ä»¶çš„ä¿¡æ¯ï¼Œå€¼ä¸ºstring_idsçš„ä¸€ä¸ªindexã€‚è‹¥æ­¤é¡¹ä¿¡æ¯ä¸¢å¤±ï¼Œæ­¤é¡¹èµ‹å€¼ä¸ºNO_INDEX=0xFFFFFFFF */
-    u4  annotationsOff;     /* å€¼ä¸ºåç§»åœ°å€ï¼ŒæŒ‡å‘çš„å†…å®¹æ˜¯è¯¥classçš„æ³¨è§£ï¼Œä½ç½®åœ¨dataåŒºï¼Œæ ¼å¼ä¸ºannotations_directory_itemï¼Œè‹¥æ²¡æœ‰æ­¤é¡¹ï¼Œå€¼ä¸º0 */
-    u4  classDataOff;       /* å€¼ä¸ºåç§»åœ°å€ï¼ŒæŒ‡å‘çš„å†…å®¹æ˜¯è¯¥classçš„ä½¿ç”¨åˆ°çš„æ•°æ®ï¼Œä½ç½®åœ¨dataåŒºï¼Œæ ¼å¼ä¸ºclass_data_itemã€‚æ— å¶æ²¡æœ‰æ­¤é¡¹ï¼Œåˆ™å€¼ä¸º0 */
-    u4  staticValuesOff;    /* å€¼ä¸ºåç§»åœ°å€ï¼ŒæŒ‡å‘dataåŒºé‡Œçš„ä¸€ä¸ªåˆ—è¡¨ï¼Œæ ¼å¼ä¸ºencoded_array_itemã€‚è‹¥æ²¡æœ‰æ­¤é¡¹ï¼Œå€¼ä¸º0. */
+	u4  classIdx;           /* ÃèÊö¾ßÌåµÄclassÀàĞÍ£¬ÖµÊÇtype_idsµÄÒ»¸öindex£¬Öµ±ØĞëÊÇÒ»¸öclassÀàĞÍ£¬²»ÄÜÊÇÊı×é»òÕß»ù±¾ÀàĞÍ */
+	u4  accessFlags;        /* ÃèÊöclassµÄ·ÃÎÊÀàĞÍ£¬Èçpublic,final,staticµÈ */
+	u4  superclassIdx;      /* ÃèÊö¸¸ÀàµÄÀàĞÍ£¬Öµ±ØĞëÊÇÒ»¸öclassÀàĞÍ£¬²»ÄÜÊÇÊı×éÀ×ĞË¹ú»òÕß»ù±¾ÀàĞÍ */
+	u4  interfacesOff;      /* ÖµÎªÆ«ÒÆµØÖ·£¬±»Ö¸ÏòµÄÊı¾İ½á¹¹Îªtype_list£¬classÈôÃ»ÓĞinterfaces£¬ÖµÎª0 */
+	u4  sourceFileIdx;      /* ±íÊ¾Ô´´úÂëÎÄ¼şµÄĞÅÏ¢£¬ÖµÎªstring_idsµÄÒ»¸öindex¡£Èô´ËÏîĞÅÏ¢¶ªÊ§£¬´ËÏî¸³ÖµÎªNO_INDEX=0xFFFFFFFF */
+	u4  annotationsOff;     /* ÖµÎªÆ«ÒÆµØÖ·£¬Ö¸ÏòµÄÄÚÈİÊÇ¸ÃclassµÄ×¢½â£¬Î»ÖÃÔÚdataÇø£¬¸ñÊ½Îªannotations_directory_item£¬ÈôÃ»ÓĞ´ËÏî£¬ÖµÎª0 */
+	u4  classDataOff;       /* ÖµÎªÆ«ÒÆµØÖ·£¬Ö¸ÏòµÄÄÚÈİÊÇ¸ÃclassµÄÊ¹ÓÃµ½µÄÊı¾İ£¬Î»ÖÃÔÚdataÇø£¬¸ñÊ½Îªclass_data_item¡£ÎŞÅ¼Ã»ÓĞ´ËÏî£¬ÔòÖµÎª0 */
+	u4  staticValuesOff;    /* ÖµÎªÆ«ÒÆµØÖ·£¬Ö¸ÏòdataÇøÀïµÄÒ»¸öÁĞ±í£¬¸ñÊ½Îªencoded_array_item¡£ÈôÃ»ÓĞ´ËÏî£¬ÖµÎª0. */
 };
 
 /*
  * Direct-mapped "call_site_id_item"
  */
 struct DexCallSiteId {
-    u4  callSiteOff;        /* file offset to DexEncodedArray */
+	u4  callSiteOff;        /* file offset to DexEncodedArray */
 };
 
 /*
  * Enumeration of method handle type codes.
  */
 enum MethodHandleType {
-    STATIC_PUT = 0x00,
-    STATIC_GET = 0x01,
-    INSTANCE_PUT = 0x02,
-    INSTANCE_GET = 0x03,
-    INVOKE_STATIC = 0x04,
-    INVOKE_INSTANCE = 0x05,
-    INVOKE_CONSTRUCTOR = 0x06,
-    INVOKE_DIRECT = 0x07,
-    INVOKE_INTERFACE = 0x08
+	STATIC_PUT = 0x00,
+	STATIC_GET = 0x01,
+	INSTANCE_PUT = 0x02,
+	INSTANCE_GET = 0x03,
+	INVOKE_STATIC = 0x04,
+	INVOKE_INSTANCE = 0x05,
+	INVOKE_CONSTRUCTOR = 0x06,
+	INVOKE_DIRECT = 0x07,
+	INVOKE_INTERFACE = 0x08
 };
 
 /*
  * Direct-mapped "method_handle_item"
  */
 struct DexMethodHandleItem {
-    u2 methodHandleType;    /* type of method handle */
-    u2 reserved1;           /* reserved for future use */
-    u2 fieldOrMethodIdx;    /* index of associated field or method */
-    u2 reserved2;           /* reserved for future use */
+	u2 methodHandleType;    /* type of method handle */
+	u2 reserved1;           /* reserved for future use */
+	u2 fieldOrMethodIdx;    /* index of associated field or method */
+	u2 reserved2;           /* reserved for future use */
 };
 
 /*
  * Direct-mapped "type_item".
  */
 struct DexTypeItem {
-    u2  typeIdx;            /* index into typeIds */
+	u2  typeIdx;            /* index into typeIds */
 };
 
 /*
  * Direct-mapped "type_list".
  */
 struct DexTypeList {
-    u4  size;               /* #of entries in list */
-    DexTypeItem list[1];    /* entries */
+	u4  size;               /* #of entries in list */
+	DexTypeItem list[1];    /* entries */
 };
 
 /*
- * ä»£ç æ¡ç›®
+ * ´úÂëÌõÄ¿
  *
- *  (1) ä¸€ä¸ª .dex æ–‡ä»¶è¢«åˆ†æˆäº† 9 ä¸ªåŒº ï¼Œå…¶ä¸­æœ‰ä¸€ä¸ªç´¢å¼•åŒºå«åšclass_defs ï¼Œ ç´¢å¼•äº† .dex é‡Œé¢ç”¨åˆ°çš„ class ï¼Œä»¥åŠå¯¹è¿™ä¸ª class çš„æè¿° ã€‚
- *  (2) class_defs åŒº ï¼Œ é‡Œé¢å…¶å®æ˜¯class_def_item ç»“æ„ ã€‚è¿™ä¸ªç»“æ„é‡Œæè¿°äº† LHello; çš„å„ç§ä¿¡æ¯ ï¼Œè¯¸å¦‚åç§° ï¼Œsuperclass , access flagï¼Œ
- *       interface ç­‰ ã€‚class_def_item é‡Œæœ‰ä¸€ä¸ªå…ƒç´  class_data_off , æŒ‡å‘data åŒºé‡Œçš„ä¸€ä¸ª class_data_item ç»“æ„ ï¼Œ
- *       ç”¨æ¥æè¿° class ä½¿ç”¨åˆ°çš„å„ç§æ•°æ® ã€‚è‡ªæ­¤ä»¥åçš„ç»“æ„éƒ½å½’äº dataåŒºäº† ã€‚
- *  (3) class_data_item ç»“æ„ ï¼Œé‡Œæè¿°å€¼ç€ class é‡Œä½¿ç”¨åˆ°çš„ static field , instance field , direct_method ï¼Œå’Œ virtual_method
- *      çš„æ•°ç›®å’Œæè¿° ã€‚ä¾‹å­ Hello.dex é‡Œ ï¼Œåªæœ‰ 2 ä¸ª direct_method , å…¶ä½™çš„ field å’Œmethod çš„æ•°ç›®éƒ½ä¸º 0 ã€‚æè¿° direct_method çš„ç»“æ„å«
- *      åš encoded_method ï¼Œæ˜¯ç”¨æ¥è¯¦ç»†æè¿°æŸä¸ª methodçš„ ã€‚
- *  (4) encoded_method ç»“æ„ ï¼Œæè¿°æŸä¸ª method çš„ method ç±»å‹ ï¼Œ access flags å’Œä¸€ä¸ªæŒ‡å‘ code_itemçš„åç§»åœ°å€ ï¼Œé‡Œé¢å­˜æ”¾çš„æ˜¯è¯¥ method
- *      çš„å…·ä½“å®ç° ã€‚
- *  (5) code_item ï¼Œç»“æ„é‡Œæè¿°ç€æŸä¸ª method çš„å…·ä½“å®ç° ã€‚
+ *  (1) Ò»¸ö .dex ÎÄ¼ş±»·Ö³ÉÁË 9 ¸öÇø £¬ÆäÖĞÓĞÒ»¸öË÷ÒıÇø½Ğ×öclass_defs £¬ Ë÷ÒıÁË .dex ÀïÃæÓÃµ½µÄ class £¬ÒÔ¼°¶ÔÕâ¸ö class µÄÃèÊö ¡£
+ *  (2) class_defs Çø £¬ ÀïÃæÆäÊµÊÇclass_def_item ½á¹¹ ¡£Õâ¸ö½á¹¹ÀïÃèÊöÁË LHello; µÄ¸÷ÖÖĞÅÏ¢ £¬ÖîÈçÃû³Æ £¬superclass , access flag£¬
+ *       interface µÈ ¡£class_def_item ÀïÓĞÒ»¸öÔªËØ class_data_off , Ö¸Ïòdata ÇøÀïµÄÒ»¸ö class_data_item ½á¹¹ £¬
+ *       ÓÃÀ´ÃèÊö class Ê¹ÓÃµ½µÄ¸÷ÖÖÊı¾İ ¡£×Ô´ËÒÔºóµÄ½á¹¹¶¼¹éÓÚ dataÇøÁË ¡£
+ *  (3) class_data_item ½á¹¹ £¬ÀïÃèÊöÖµ×Å class ÀïÊ¹ÓÃµ½µÄ static field , instance field , direct_method £¬ºÍ virtual_method
+ *      µÄÊıÄ¿ºÍÃèÊö ¡£Àı×Ó Hello.dex Àï £¬Ö»ÓĞ 2 ¸ö direct_method , ÆäÓàµÄ field ºÍmethod µÄÊıÄ¿¶¼Îª 0 ¡£ÃèÊö direct_method µÄ½á¹¹½Ğ
+ *      ×ö encoded_method £¬ÊÇÓÃÀ´ÏêÏ¸ÃèÊöÄ³¸ö methodµÄ ¡£
+ *  (4) encoded_method ½á¹¹ £¬ÃèÊöÄ³¸ö method µÄ method ÀàĞÍ £¬ access flags ºÍÒ»¸öÖ¸Ïò code_itemµÄÆ«ÒÆµØÖ· £¬ÀïÃæ´æ·ÅµÄÊÇ¸Ã method
+ *      µÄ¾ßÌåÊµÏÖ ¡£
+ *  (5) code_item £¬½á¹¹ÀïÃèÊö×ÅÄ³¸ö method µÄ¾ßÌåÊµÏÖ ¡£
  *
  */
 struct DexCode {
-    u2  registersSize;  /* æœ¬æ®µä»£ç ä½¿ç”¨åˆ°çš„å¯„å­˜å™¨æ•°ç›® */
-    u2  insSize;        /* methodä¼ å…¥å‚æ•°çš„æ•°ç›® */
-    u2  outsSize;       /* æœ¬æ®µä»£ç è°ƒç”¨å…¶ä»–æ–¹æ³•æ—¶éœ€è¦çš„å‚æ•°ä¸ªæ•° */
-    u2  triesSize;      /* try_itemç»“æ„çš„ä¸ªæ•° */
-    u4  debugInfoOff;       /* åç§»åœ°å€ï¼ŒæŒ‡å‘æœ¬æ®µä»£ç çš„debugä¿¡æ¯å­˜æ”¾ä½ç½®ï¼Œæ˜¯ä¸€ä¸ªdebug_info_itemç»“æ„ */
-    u4  insnsSize;          /* æŒ‡ä»¤åˆ—è¡¨çš„å¤§å°ï¼Œä»¥16-bitä¸ºå•ä½ã€‚insnsæ˜¯instructionsçš„ç¼©å†™ */
-    u2  insns[1];           /*  insnsæ•°ç»„ */
-    /* followed by optional u2 padding */
-    /* followed by try_item[triesSize] */
-    /* followed by uleb128 handlersSize */
-    /* followed by catch_handler_item[handlersSize] */
+	u2  registersSize;  /* ±¾¶Î´úÂëÊ¹ÓÃµ½µÄ¼Ä´æÆ÷ÊıÄ¿ */
+	u2  insSize;        /* method´«Èë²ÎÊıµÄÊıÄ¿ */
+	u2  outsSize;       /* ±¾¶Î´úÂëµ÷ÓÃÆäËû·½·¨Ê±ĞèÒªµÄ²ÎÊı¸öÊı */
+	u2  triesSize;      /* try_item½á¹¹µÄ¸öÊı */
+	u4  debugInfoOff;       /* Æ«ÒÆµØÖ·£¬Ö¸Ïò±¾¶Î´úÂëµÄdebugĞÅÏ¢´æ·ÅÎ»ÖÃ£¬ÊÇÒ»¸ödebug_info_item½á¹¹ */
+	u4  insnsSize;          /* Ö¸ÁîÁĞ±íµÄ´óĞ¡£¬ÒÔ16-bitÎªµ¥Î»¡£insnsÊÇinstructionsµÄËõĞ´ */
+	u2  insns[1];           /*  insnsÊı×é */
+	/* followed by optional u2 padding */
+	/* followed by try_item[triesSize] */
+	/* followed by uleb128 handlersSize */
+	/* followed by catch_handler_item[handlersSize] */
 };
 
 /*
  * Direct-mapped "try_item".
  */
 struct DexTry {
-    u4  startAddr;          /* start address, in 16-bit code units */
-    u2  insnCount;          /* instruction count, in 16-bit code units */
-    u2  handlerOff;         /* offset in encoded handler data to handlers */
+	u4  startAddr;          /* start address, in 16-bit code units */
+	u2  insnCount;          /* instruction count, in 16-bit code units */
+	u2  handlerOff;         /* offset in encoded handler data to handlers */
 };
 
 /*
  * Link table.  Currently undefined.
  */
 struct DexLink {
-    u1  bleargh;
+	u1  bleargh;
 };
 
 
@@ -464,60 +492,60 @@ struct DexLink {
  * Direct-mapped "annotations_directory_item".
  */
 struct DexAnnotationsDirectoryItem {
-    u4  classAnnotationsOff;  /* offset to DexAnnotationSetItem */
-    u4  fieldsSize;           /* count of DexFieldAnnotationsItem */
-    u4  methodsSize;          /* count of DexMethodAnnotationsItem */
-    u4  parametersSize;       /* count of DexParameterAnnotationsItem */
-    /* followed by DexFieldAnnotationsItem[fieldsSize] */
-    /* followed by DexMethodAnnotationsItem[methodsSize] */
-    /* followed by DexParameterAnnotationsItem[parametersSize] */
+	u4  classAnnotationsOff;  /* offset to DexAnnotationSetItem */
+	u4  fieldsSize;           /* count of DexFieldAnnotationsItem */
+	u4  methodsSize;          /* count of DexMethodAnnotationsItem */
+	u4  parametersSize;       /* count of DexParameterAnnotationsItem */
+	/* followed by DexFieldAnnotationsItem[fieldsSize] */
+	/* followed by DexMethodAnnotationsItem[methodsSize] */
+	/* followed by DexParameterAnnotationsItem[parametersSize] */
 };
 
 /*
  * Direct-mapped "field_annotations_item".
  */
 struct DexFieldAnnotationsItem {
-    u4  fieldIdx;
-    u4  annotationsOff;             /* offset to DexAnnotationSetItem */
+	u4  fieldIdx;
+	u4  annotationsOff;             /* offset to DexAnnotationSetItem */
 };
 
 /*
  * Direct-mapped "method_annotations_item".
  */
 struct DexMethodAnnotationsItem {
-    u4  methodIdx;
-    u4  annotationsOff;             /* offset to DexAnnotationSetItem */
+	u4  methodIdx;
+	u4  annotationsOff;             /* offset to DexAnnotationSetItem */
 };
 
 /*
  * Direct-mapped "parameter_annotations_item".
  */
 struct DexParameterAnnotationsItem {
-    u4  methodIdx;
-    u4  annotationsOff;             /* offset to DexAnotationSetRefList */
+	u4  methodIdx;
+	u4  annotationsOff;             /* offset to DexAnotationSetRefList */
 };
 
 /*
  * Direct-mapped "annotation_set_ref_item".
  */
 struct DexAnnotationSetRefItem {
-    u4  annotationsOff;             /* offset to DexAnnotationSetItem */
+	u4  annotationsOff;             /* offset to DexAnnotationSetItem */
 };
 
 /*
  * Direct-mapped "annotation_set_ref_list".
  */
 struct DexAnnotationSetRefList {
-    u4  size;
-    DexAnnotationSetRefItem list[1];
+	u4  size;
+	DexAnnotationSetRefItem list[1];
 };
 
 /*
  * Direct-mapped "annotation_set_item".
  */
 struct DexAnnotationSetItem {
-    u4  size;
-    u4  entries[1];                 /* offset to DexAnnotationItem */
+	u4  size;
+	u4  entries[1];                 /* offset to DexAnnotationItem */
 };
 
 /*
@@ -526,8 +554,8 @@ struct DexAnnotationSetItem {
  * NOTE: this structure is byte-aligned.
  */
 struct DexAnnotationItem {
-    u1  visibility;
-    u1  annotation[1];              /* data in encoded_annotation format */
+	u1  visibility;
+	u1  annotation[1];              /* data in encoded_annotation format */
 };
 
 /*
@@ -536,7 +564,7 @@ struct DexAnnotationItem {
  * NOTE: this structure is byte-aligned.
  */
 struct DexEncodedArray {
-    u1  array[1];                   /* data in encoded_array format */
+	u1  array[1];                   /* data in encoded_array format */
 };
 
 /*
@@ -549,13 +577,13 @@ struct DexEncodedArray {
  * there's less of a penalty for using a fairly sparse table.
  */
 struct DexClassLookup {
-    int     size;                       // total size, including "size"
-    int     numEntries;                 // size of table[]; always power of 2
-    struct {
-        u4      classDescriptorHash;    // class descriptor hash code
-        int     classDescriptorOffset;  // in bytes, from start of DEX
-        int     classDefOffset;         // in bytes, from start of DEX
-    } table[1];
+	int     size;                       // total size, including "size"
+	int     numEntries;                 // size of table[]; always power of 2
+	struct {
+		u4      classDescriptorHash;    // class descriptor hash code
+		int     classDescriptorOffset;  // in bytes, from start of DEX
+		int     classDefOffset;         // in bytes, from start of DEX
+	} table[1];
 };
 
 /*
@@ -567,19 +595,19 @@ struct DexClassLookup {
  * Try to keep this simple and fixed-size.
  */
 struct DexOptHeader {
-    u1  magic[8];           /* includes version number */
+	u1  magic[8];           /* includes version number */
 
-    u4  dexOffset;          /* file offset of DEX header */
-    u4  dexLength;
-    u4  depsOffset;         /* offset of optimized DEX dependency table */
-    u4  depsLength;
-    u4  optOffset;          /* file offset of optimized data tables */
-    u4  optLength;
+	u4  dexOffset;          /* file offset of DEX header */
+	u4  dexLength;
+	u4  depsOffset;         /* offset of optimized DEX dependency table */
+	u4  depsLength;
+	u4  optOffset;          /* file offset of optimized data tables */
+	u4  optLength;
 
-    u4  flags;              /* some info flags */
-    u4  checksum;           /* adler32 checksum covering deps/opt */
+	u4  flags;              /* some info flags */
+	u4  checksum;           /* adler32 checksum covering deps/opt */
 
-    /* pad for 64-bit alignment if necessary */
+	/* pad for 64-bit alignment if necessary */
 };
 
 #define DEX_OPT_FLAG_BIG            (1<<1)  /* swapped to big-endian */
@@ -593,46 +621,46 @@ struct DexOptHeader {
  * to access specific structures.
  */
 struct DexFile {
-    /* directly-mapped "opt" header */
-    //const DexOptHeader* pOptHeader;
+	/* directly-mapped "opt" header */
+	//const DexOptHeader* pOptHeader;
 
-    /*
-        å¯¹åº”å…³ç³»å¦‚ä¸‹
-        DexHeader*    pHeader   ---->struct header_item dex_header
-        DexStringId*  pStringIds---->struct string_id_list dex_string_ids
-        DexTypeId*    pTypeIds  ---->struct type_id_list dex_type_ids
-        DexFieldId*   pFieldIds ---->struct field_id_list dex_field_ids
-        DexMethodId*  pMethodIds---->struct method_id_list dex_method_ids
-        DexProtoId*   pProtoIds ---->struct proto_id_list dex_proto_ids
-        DexClassDef*  pClassDefs---->struct class_def_item_list dex_class_defs
-        DexLink*      pLinkData ---->struct map_list_type dex_map_list
-     */
+	/*
+		¶ÔÓ¦¹ØÏµÈçÏÂ
+		DexHeader*    pHeader   ---->struct header_item dex_header
+		DexStringId*  pStringIds---->struct string_id_list dex_string_ids
+		DexTypeId*    pTypeIds  ---->struct type_id_list dex_type_ids
+		DexFieldId*   pFieldIds ---->struct field_id_list dex_field_ids
+		DexMethodId*  pMethodIds---->struct method_id_list dex_method_ids
+		DexProtoId*   pProtoIds ---->struct proto_id_list dex_proto_ids
+		DexClassDef*  pClassDefs---->struct class_def_item_list dex_class_defs
+		DexLink*      pLinkData ---->struct map_list_type dex_map_list
+	 */
 
-    /* pointers to directly-mapped structs and arrays in base DEX */
-     DexHeader*    pHeader;        //DEX æ–‡ä»¶å¤´ï¼Œè®°å½•äº†ä¸€äº›å½“å‰æ–‡ä»¶çš„ä¿¡æ¯ä»¥åŠå…¶ä»–æ•°æ®ç»“æ„åœ¨æ–‡ä»¶ä¸­çš„åç§»é‡
-     DexStringId*  pStringIds;     //æ•°ç»„,å…ƒç´ ç±»å‹ä¸ºstring_id_item,å­˜å‚¨å­—ç¬¦ä¸²ç›¸å…³çš„ä¿¡æ¯
-     DexTypeId*    pTypeIds;       //æ•°ç»„,å­˜å‚¨ç±»å‹ç›¸å…³çš„ä¿¡æ¯
-     DexFieldId*   pFieldIds;      //æ•°ç»„,å­˜å‚¨æˆå‘˜å˜é‡ä¿¡æ¯,åŒ…æ‹¬å˜é‡åå’Œç±»å‹ç­‰
-     DexMethodId*  pMethodIds;     //æ•°ç»„,å­˜å‚¨æˆå‘˜å‡½æ•°ä¿¡æ¯åŒ…æ‹¬å‡½æ•°å å‚æ•°å’Œè¿”å›å€¼ç±»å‹
-     DexProtoId*   pProtoIds;      //æ•°ç»„,å‡½æ•°åŸå‹æ•°æ®ç´¢å¼•ï¼Œè®°å½•äº†æ–¹æ³•å£°æ˜çš„å­—ç¬¦ä¸²ï¼Œè¿”å›ç±»å‹å’Œå‚æ•°åˆ—è¡¨
-     DexClassDef*  pClassDefs;     //æ•°ç»„,å­˜å‚¨ç±»çš„ä¿¡æ¯
-     DexLink*      pLinkData;      //Dexæ–‡ä»¶é‡è¦çš„æ•°æ®å†…å®¹éƒ½å­˜åœ¨dataåŒºåŸŸå†…,ä¸€äº›æ•°æ®ç»“æ„ä¼šé€šè¿‡å¦‚ xx_offè¿™æ ·çš„æˆå‘˜å˜é‡åªæƒ³æ–‡ä»¶çš„æŸä¸ªä½ç½®,ä»è¯¥ä½ç½®å¼€å§‹,å­˜å‚¨äº†å¯¹åº”çš„æ•°æ®ç»“æ„çš„å†…å®¹,è€Œxx_offçš„ä½ç½®ä¸€èˆ¬è½åœ¨dataåŒºåŸŸå†…
+	 /* pointers to directly-mapped structs and arrays in base DEX */
+	DexHeader* pHeader;        //DEX ÎÄ¼şÍ·£¬¼ÇÂ¼ÁËÒ»Ğ©µ±Ç°ÎÄ¼şµÄĞÅÏ¢ÒÔ¼°ÆäËûÊı¾İ½á¹¹ÔÚÎÄ¼şÖĞµÄÆ«ÒÆÁ¿
+	DexStringId* pStringIds;     //Êı×é,ÔªËØÀàĞÍÎªstring_id_item,´æ´¢×Ö·û´®Ïà¹ØµÄĞÅÏ¢
+	DexTypeId* pTypeIds;       //Êı×é,´æ´¢ÀàĞÍÏà¹ØµÄĞÅÏ¢
+	DexFieldId* pFieldIds;      //Êı×é,´æ´¢³ÉÔ±±äÁ¿ĞÅÏ¢,°üÀ¨±äÁ¿ÃûºÍÀàĞÍµÈ
+	DexMethodId* pMethodIds;     //Êı×é,´æ´¢³ÉÔ±º¯ÊıĞÅÏ¢°üÀ¨º¯ÊıÃû ²ÎÊıºÍ·µ»ØÖµÀàĞÍ
+	DexProtoId* pProtoIds;      //Êı×é,º¯ÊıÔ­ĞÍÊı¾İË÷Òı£¬¼ÇÂ¼ÁË·½·¨ÉùÃ÷µÄ×Ö·û´®£¬·µ»ØÀàĞÍºÍ²ÎÊıÁĞ±í
+	DexClassDef* pClassDefs;     //Êı×é,´æ´¢ÀàµÄĞÅÏ¢
+	DexLink* pLinkData;      //DexÎÄ¼şÖØÒªµÄÊı¾İÄÚÈİ¶¼´æÔÚdataÇøÓòÄÚ,Ò»Ğ©Êı¾İ½á¹¹»áÍ¨¹ıÈç xx_offÕâÑùµÄ³ÉÔ±±äÁ¿Ö»ÏëÎÄ¼şµÄÄ³¸öÎ»ÖÃ,´Ó¸ÃÎ»ÖÃ¿ªÊ¼,´æ´¢ÁË¶ÔÓ¦µÄÊı¾İ½á¹¹µÄÄÚÈİ,¶øxx_offµÄÎ»ÖÃÒ»°ãÂäÔÚdataÇøÓòÄÚ
 
-    /*
-     * These are mapped out of the "auxillary" section, and may not be
-     * included in the file.
-     */
-    const DexClassLookup* pClassLookup;
-    const void*         pRegisterMapPool;       // RegisterMapClassPool
+   /*
+	* These are mapped out of the "auxillary" section, and may not be
+	* included in the file.
+	*/
+	const DexClassLookup* pClassLookup;
+	const void* pRegisterMapPool;       // RegisterMapClassPool
 
-    /* points to start of DEX file data */
-    const u1*           baseAddr;
+	/* points to start of DEX file data */
+	const u1* baseAddr;
 
-    /* track memory overhead for auxillary structures */
-    int                 overhead;
+	/* track memory overhead for auxillary structures */
+	int                 overhead;
 
-    /* additional app-specific data structures associated with the DEX */
-    //void*               auxData;
+	/* additional app-specific data structures associated with the DEX */
+	//void*               auxData;
 };
 
 /*
@@ -649,9 +677,9 @@ DexFile* dexFileParse(const u1* data, size_t length, int flags);
 
 /* bit values for "flags" argument to dexFileParse */
 enum {
-    kDexParseDefault            = 0,
-    kDexParseVerifyChecksum     = 1,
-    kDexParseContinueOnError    = (1 << 1),
+	kDexParseDefault = 0,
+	kDexParseVerifyChecksum = 1,
+	kDexParseContinueOnError = (1 << 1),
 };
 
 /*
@@ -708,45 +736,46 @@ void dexFileSetupBasicPointers(DexFile* pDexFile, const u1* data);
 
 /* return the DexMapList of the file, if any */
 DEX_INLINE const DexMapList* dexGetMap(const DexFile* pDexFile) {
-    u4 mapOff = pDexFile->pHeader->mapOff;
+	u4 mapOff = pDexFile->pHeader->mapOff;
 
-    if (mapOff == 0) {
-        return NULL;
-    } else {
-        return (const DexMapList*) (pDexFile->baseAddr + mapOff);
-    }
+	if (mapOff == 0) {
+		return NULL;
+	}
+	else {
+		return (const DexMapList*)(pDexFile->baseAddr + mapOff);
+	}
 }
 
 /* return the const char* string data referred to by the given string_id */
 DEX_INLINE const char* dexGetStringData(const DexFile* pDexFile,
-        const DexStringId* pStringId) {
-    const u1* ptr = pDexFile->baseAddr + pStringId->stringDataOff;
+	const DexStringId* pStringId) {
+	const u1* ptr = pDexFile->baseAddr + pStringId->stringDataOff;
 
-    // Skip the uleb128 length.
-    while (*(ptr++) > 0x7f) /* empty */ ;
+	// Skip the uleb128 length.
+	while (*(ptr++) > 0x7f) /* empty */;
 
-    return (const char*) ptr;
+	return (const char*)ptr;
 }
 /* return the StringId with the specified index */
 DEX_INLINE const DexStringId* dexGetStringId(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->stringIdsSize);
-    return &pDexFile->pStringIds[idx];
+	assert(idx < pDexFile->pHeader->stringIdsSize);
+	return &pDexFile->pStringIds[idx];
 }
 /* return the UTF-8 encoded string with the specified string_id index */
 DEX_INLINE const char* dexStringById(const DexFile* pDexFile, u4 idx) {
-    const DexStringId* pStringId = dexGetStringId(pDexFile, idx);
-    return dexGetStringData(pDexFile, pStringId);
+	const DexStringId* pStringId = dexGetStringId(pDexFile, idx);
+	return dexGetStringData(pDexFile, pStringId);
 }
 
 /* Return the UTF-8 encoded string with the specified string_id index,
  * also filling in the UTF-16 size (number of 16-bit code points).*/
 const char* dexStringAndSizeById(const DexFile* pDexFile, u4 idx,
-        u4* utf16Size);
+	u4* utf16Size);
 
 /* return the TypeId with the specified index */
 DEX_INLINE const DexTypeId* dexGetTypeId(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->typeIdsSize);
-    return &pDexFile->pTypeIds[idx];
+	assert(idx < pDexFile->pHeader->typeIdsSize);
+	return &pDexFile->pTypeIds[idx];
 }
 
 /*
@@ -754,26 +783,26 @@ DEX_INLINE const DexTypeId* dexGetTypeId(const DexFile* pDexFile, u4 idx) {
  * The caller should not free() the returned string.
  */
 DEX_INLINE const char* dexStringByTypeIdx(const DexFile* pDexFile, u4 idx) {
-    const DexTypeId* typeId = dexGetTypeId(pDexFile, idx);
-    return dexStringById(pDexFile, typeId->descriptorIdx);
+	const DexTypeId* typeId = dexGetTypeId(pDexFile, idx);
+	return dexStringById(pDexFile, typeId->descriptorIdx);
 }
 
 /* return the MethodId with the specified index */
 DEX_INLINE const DexMethodId* dexGetMethodId(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->methodIdsSize);
-    return &pDexFile->pMethodIds[idx];
+	assert(idx < pDexFile->pHeader->methodIdsSize);
+	return &pDexFile->pMethodIds[idx];
 }
 
 /* return the FieldId with the specified index */
 DEX_INLINE const DexFieldId* dexGetFieldId(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->fieldIdsSize);
-    return &pDexFile->pFieldIds[idx];
+	assert(idx < pDexFile->pHeader->fieldIdsSize);
+	return &pDexFile->pFieldIds[idx];
 }
 
 /* return the ProtoId with the specified index */
 DEX_INLINE const DexProtoId* dexGetProtoId(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->protoIdsSize);
-    return &pDexFile->pProtoIds[idx];
+	assert(idx < pDexFile->pHeader->protoIdsSize);
+	return &pDexFile->pProtoIds[idx];
 }
 
 /*
@@ -781,78 +810,78 @@ DEX_INLINE const DexProtoId* dexGetProtoId(const DexFile* pDexFile, u4 idx) {
  * does not have a parameter list.
  */
 DEX_INLINE const DexTypeList* dexGetProtoParameters(
-    const DexFile *pDexFile, const DexProtoId* pProtoId) {
-    if (pProtoId->parametersOff == 0) {
-        return NULL;
-    }
-    return (const DexTypeList*)
-        (pDexFile->baseAddr + pProtoId->parametersOff);
+	const DexFile* pDexFile, const DexProtoId* pProtoId) {
+	if (pProtoId->parametersOff == 0) {
+		return NULL;
+	}
+	return (const DexTypeList*)
+		(pDexFile->baseAddr + pProtoId->parametersOff);
 }
 
 /* return the ClassDef with the specified index */
 DEX_INLINE const DexClassDef* dexGetClassDef(const DexFile* pDexFile, u4 idx) {
-    assert(idx < pDexFile->pHeader->classDefsSize);
-    return &pDexFile->pClassDefs[idx];
+	assert(idx < pDexFile->pHeader->classDefsSize);
+	return &pDexFile->pClassDefs[idx];
 }
 
 /* given a ClassDef pointer, recover its index */
 DEX_INLINE u4 dexGetIndexForClassDef(const DexFile* pDexFile,
-    const DexClassDef* pClassDef)
+	const DexClassDef* pClassDef)
 {
-    assert(pClassDef >= pDexFile->pClassDefs &&
-           pClassDef < pDexFile->pClassDefs + pDexFile->pHeader->classDefsSize);
-    return pClassDef - pDexFile->pClassDefs;
+	assert(pClassDef >= pDexFile->pClassDefs &&
+		pClassDef < pDexFile->pClassDefs + pDexFile->pHeader->classDefsSize);
+	return pClassDef - pDexFile->pClassDefs;
 }
 
 /* get the interface list for a DexClass */
 DEX_INLINE const DexTypeList* dexGetInterfacesList(const DexFile* pDexFile,
-    const DexClassDef* pClassDef)
+	const DexClassDef* pClassDef)
 {
-    if (pClassDef->interfacesOff == 0)
-        return NULL;
-    return (const DexTypeList*)
-        (pDexFile->baseAddr + pClassDef->interfacesOff);
+	if (pClassDef->interfacesOff == 0)
+		return NULL;
+	return (const DexTypeList*)
+		(pDexFile->baseAddr + pClassDef->interfacesOff);
 }
 /* return the Nth entry in a DexTypeList. */
 DEX_INLINE const DexTypeItem* dexGetTypeItem(const DexTypeList* pList,
-    u4 idx)
+	u4 idx)
 {
-    assert(idx < pList->size);
-    return &pList->list[idx];
+	assert(idx < pList->size);
+	return &pList->list[idx];
 }
 /* return the type_idx for the Nth entry in a TypeList */
 DEX_INLINE u4 dexTypeListGetIdx(const DexTypeList* pList, u4 idx) {
-    const DexTypeItem* pItem = dexGetTypeItem(pList, idx);
-    return pItem->typeIdx;
+	const DexTypeItem* pItem = dexGetTypeItem(pList, idx);
+	return pItem->typeIdx;
 }
 
 /* get the static values list for a DexClass */
 DEX_INLINE const DexEncodedArray* dexGetStaticValuesList(
-    const DexFile* pDexFile, const DexClassDef* pClassDef)
+	const DexFile* pDexFile, const DexClassDef* pClassDef)
 {
-    if (pClassDef->staticValuesOff == 0)
-        return NULL;
-    return (const DexEncodedArray*)
-        (pDexFile->baseAddr + pClassDef->staticValuesOff);
+	if (pClassDef->staticValuesOff == 0)
+		return NULL;
+	return (const DexEncodedArray*)
+		(pDexFile->baseAddr + pClassDef->staticValuesOff);
 }
 
 /* get the annotations directory item for a DexClass */
 DEX_INLINE const DexAnnotationsDirectoryItem* dexGetAnnotationsDirectoryItem(
-    const DexFile* pDexFile, const DexClassDef* pClassDef)
+	const DexFile* pDexFile, const DexClassDef* pClassDef)
 {
-    if (pClassDef->annotationsOff == 0)
-        return NULL;
-    return (const DexAnnotationsDirectoryItem*)
-        (pDexFile->baseAddr + pClassDef->annotationsOff);
+	if (pClassDef->annotationsOff == 0)
+		return NULL;
+	return (const DexAnnotationsDirectoryItem*)
+		(pDexFile->baseAddr + pClassDef->annotationsOff);
 }
 
 /* get the source file string */
 DEX_INLINE const char* dexGetSourceFile(
-    const DexFile* pDexFile, const DexClassDef* pClassDef)
+	const DexFile* pDexFile, const DexClassDef* pClassDef)
 {
-    if (pClassDef->sourceFileIdx == 0xffffffff)
-        return NULL;
-    return dexStringById(pDexFile, pClassDef->sourceFileIdx);
+	if (pClassDef->sourceFileIdx == 0xffffffff)
+		return NULL;
+	return dexStringById(pDexFile, pClassDef->sourceFileIdx);
 }
 
 /* get the size, in bytes, of a DexCode */
@@ -860,211 +889,212 @@ size_t dexGetDexCodeSize(const DexCode* pCode);
 
 /* Get the list of "tries" for the given DexCode. */
 DEX_INLINE const DexTry* dexGetTries(const DexCode* pCode) {
-    const u2* insnsEnd = &pCode->insns[pCode->insnsSize];
+	const u2* insnsEnd = &pCode->insns[pCode->insnsSize];
 
-    // Round to four bytes.
-    if ((((uintptr_t) insnsEnd) & 3) != 0) {
-        insnsEnd++;
-    }
+	// Round to four bytes.
+	if ((((uintptr_t)insnsEnd) & 3) != 0) {
+		insnsEnd++;
+	}
 
-    return (const DexTry*) insnsEnd;
+	return (const DexTry*)insnsEnd;
 }
 
 /* Get the base of the encoded data for the given DexCode. */
 DEX_INLINE const u1* dexGetCatchHandlerData(const DexCode* pCode) {
-    const DexTry* pTries = dexGetTries(pCode);
-    return (const u1*) &pTries[pCode->triesSize];
+	const DexTry* pTries = dexGetTries(pCode);
+	return (const u1*)&pTries[pCode->triesSize];
 }
 
 /* get a pointer to the start of the debugging data */
 DEX_INLINE const u1* dexGetDebugInfoStream(const DexFile* pDexFile,
-    const DexCode* pCode)
+	const DexCode* pCode)
 {
-    if (pCode->debugInfoOff == 0) {
-        return NULL;
-    } else {
-        return pDexFile->baseAddr + pCode->debugInfoOff;
-    }
+	if (pCode->debugInfoOff == 0) {
+		return NULL;
+	}
+	else {
+		return pDexFile->baseAddr + pCode->debugInfoOff;
+	}
 }
 
 /* DexClassDef convenience - get class descriptor */
 DEX_INLINE const char* dexGetClassDescriptor(const DexFile* pDexFile,
-    const DexClassDef* pClassDef)
+	const DexClassDef* pClassDef)
 {
-    return dexStringByTypeIdx(pDexFile, pClassDef->classIdx);
+	return dexStringByTypeIdx(pDexFile, pClassDef->classIdx);
 }
 
 /* DexClassDef convenience - get superclass descriptor */
 DEX_INLINE const char* dexGetSuperClassDescriptor(const DexFile* pDexFile,
-    const DexClassDef* pClassDef)
+	const DexClassDef* pClassDef)
 {
-    if (pClassDef->superclassIdx == 0)
-        return NULL;
-    return dexStringByTypeIdx(pDexFile, pClassDef->superclassIdx);
+	if (pClassDef->superclassIdx == 0)
+		return NULL;
+	return dexStringByTypeIdx(pDexFile, pClassDef->superclassIdx);
 }
 
 /* DexClassDef convenience - get class_data_item pointer */
 DEX_INLINE const u1* dexGetClassData(const DexFile* pDexFile,
-    const DexClassDef* pClassDef)
+	const DexClassDef* pClassDef)
 {
-    if (pClassDef->classDataOff == 0)
-        return NULL;
-    return (const u1*) (pDexFile->baseAddr + pClassDef->classDataOff);
+	if (pClassDef->classDataOff == 0)
+		return NULL;
+	return (const u1*)(pDexFile->baseAddr + pClassDef->classDataOff);
 }
 
 /* Get an annotation set at a particular offset. */
 DEX_INLINE const DexAnnotationSetItem* dexGetAnnotationSetItem(
-    const DexFile* pDexFile, u4 offset)
+	const DexFile* pDexFile, u4 offset)
 {
-    if (offset == 0) {
-        return NULL;
-    }
-    return (const DexAnnotationSetItem*) (pDexFile->baseAddr + offset);
+	if (offset == 0) {
+		return NULL;
+	}
+	return (const DexAnnotationSetItem*)(pDexFile->baseAddr + offset);
 }
 /* get the class' annotation set */
 DEX_INLINE const DexAnnotationSetItem* dexGetClassAnnotationSet(
-    const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    return dexGetAnnotationSetItem(pDexFile, pAnnoDir->classAnnotationsOff);
+	return dexGetAnnotationSetItem(pDexFile, pAnnoDir->classAnnotationsOff);
 }
 
 /* get the class' field annotation list */
 DEX_INLINE const DexFieldAnnotationsItem* dexGetFieldAnnotations(
-    const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    if (pAnnoDir->fieldsSize == 0)
-        return NULL;
+	(void)pDexFile;
+	if (pAnnoDir->fieldsSize == 0)
+		return NULL;
 
-    // Skip past the header to the start of the field annotations.
-    return (const DexFieldAnnotationsItem*) &pAnnoDir[1];
+	// Skip past the header to the start of the field annotations.
+	return (const DexFieldAnnotationsItem*)&pAnnoDir[1];
 }
 
 /* get field annotation list size */
 DEX_INLINE int dexGetFieldAnnotationsSize(const DexFile* pDexFile,
-    const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    return pAnnoDir->fieldsSize;
+	(void)pDexFile;
+	return pAnnoDir->fieldsSize;
 }
 
 /* return a pointer to the field's annotation set */
 DEX_INLINE const DexAnnotationSetItem* dexGetFieldAnnotationSetItem(
-    const DexFile* pDexFile, const DexFieldAnnotationsItem* pItem)
+	const DexFile* pDexFile, const DexFieldAnnotationsItem* pItem)
 {
-    return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
+	return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
 }
 
 /* get the class' method annotation list */
 DEX_INLINE const DexMethodAnnotationsItem* dexGetMethodAnnotations(
-    const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    if (pAnnoDir->methodsSize == 0)
-        return NULL;
+	(void)pDexFile;
+	if (pAnnoDir->methodsSize == 0)
+		return NULL;
 
-    /*
-     * Skip past the header and field annotations to the start of the
-     * method annotations.
-     */
-    const u1* addr = (const u1*) &pAnnoDir[1];
-    addr += pAnnoDir->fieldsSize * sizeof (DexFieldAnnotationsItem);
-    return (const DexMethodAnnotationsItem*) addr;
+	/*
+	 * Skip past the header and field annotations to the start of the
+	 * method annotations.
+	 */
+	const u1* addr = (const u1*)&pAnnoDir[1];
+	addr += pAnnoDir->fieldsSize * sizeof(DexFieldAnnotationsItem);
+	return (const DexMethodAnnotationsItem*)addr;
 }
 
 /* get method annotation list size */
 DEX_INLINE int dexGetMethodAnnotationsSize(const DexFile* pDexFile,
-    const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    return pAnnoDir->methodsSize;
+	(void)pDexFile;
+	return pAnnoDir->methodsSize;
 }
 
 /* return a pointer to the method's annotation set */
 DEX_INLINE const DexAnnotationSetItem* dexGetMethodAnnotationSetItem(
-    const DexFile* pDexFile, const DexMethodAnnotationsItem* pItem)
+	const DexFile* pDexFile, const DexMethodAnnotationsItem* pItem)
 {
-    return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
+	return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
 }
 
 /* get the class' parameter annotation list */
 DEX_INLINE const DexParameterAnnotationsItem* dexGetParameterAnnotations(
-    const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexFile* pDexFile, const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    if (pAnnoDir->parametersSize == 0)
-        return NULL;
+	(void)pDexFile;
+	if (pAnnoDir->parametersSize == 0)
+		return NULL;
 
-    /*
-     * Skip past the header, field annotations, and method annotations
-     * to the start of the parameter annotations.
-     */
-    const u1* addr = (const u1*) &pAnnoDir[1];
-    addr += pAnnoDir->fieldsSize * sizeof (DexFieldAnnotationsItem);
-    addr += pAnnoDir->methodsSize * sizeof (DexMethodAnnotationsItem);
-    return (const DexParameterAnnotationsItem*) addr;
+	/*
+	 * Skip past the header, field annotations, and method annotations
+	 * to the start of the parameter annotations.
+	 */
+	const u1* addr = (const u1*)&pAnnoDir[1];
+	addr += pAnnoDir->fieldsSize * sizeof(DexFieldAnnotationsItem);
+	addr += pAnnoDir->methodsSize * sizeof(DexMethodAnnotationsItem);
+	return (const DexParameterAnnotationsItem*)addr;
 }
 
 /* get method annotation list size */
 DEX_INLINE int dexGetParameterAnnotationsSize(const DexFile* pDexFile,
-    const DexAnnotationsDirectoryItem* pAnnoDir)
+	const DexAnnotationsDirectoryItem* pAnnoDir)
 {
-    (void) pDexFile;
-    return pAnnoDir->parametersSize;
+	(void)pDexFile;
+	return pAnnoDir->parametersSize;
 }
 
 /* return the parameter annotation ref list */
 DEX_INLINE const DexAnnotationSetRefList* dexGetParameterAnnotationSetRefList(
-    const DexFile* pDexFile, const DexParameterAnnotationsItem* pItem)
+	const DexFile* pDexFile, const DexParameterAnnotationsItem* pItem)
 {
-    if (pItem->annotationsOff == 0) {
-        return NULL;
-    }
-    return (const DexAnnotationSetRefList*) (pDexFile->baseAddr + pItem->annotationsOff);
+	if (pItem->annotationsOff == 0) {
+		return NULL;
+	}
+	return (const DexAnnotationSetRefList*)(pDexFile->baseAddr + pItem->annotationsOff);
 }
 
 /* get method annotation list size */
 DEX_INLINE int dexGetParameterAnnotationSetRefSize(const DexFile* pDexFile,
-    const DexParameterAnnotationsItem* pItem)
+	const DexParameterAnnotationsItem* pItem)
 {
-    if (pItem->annotationsOff == 0) {
-        return 0;
-    }
-    return dexGetParameterAnnotationSetRefList(pDexFile, pItem)->size;
+	if (pItem->annotationsOff == 0) {
+		return 0;
+	}
+	return dexGetParameterAnnotationSetRefList(pDexFile, pItem)->size;
 }
 
 /* return the Nth entry from an annotation set ref list */
 DEX_INLINE const DexAnnotationSetRefItem* dexGetParameterAnnotationSetRef(
-    const DexAnnotationSetRefList* pList, u4 idx)
+	const DexAnnotationSetRefList* pList, u4 idx)
 {
-    assert(idx < pList->size);
-    return &pList->list[idx];
+	assert(idx < pList->size);
+	return &pList->list[idx];
 }
 
 /* given a DexAnnotationSetRefItem, return the DexAnnotationSetItem */
 DEX_INLINE const DexAnnotationSetItem* dexGetSetRefItemItem(
-    const DexFile* pDexFile, const DexAnnotationSetRefItem* pItem)
+	const DexFile* pDexFile, const DexAnnotationSetRefItem* pItem)
 {
-    return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
+	return dexGetAnnotationSetItem(pDexFile, pItem->annotationsOff);
 }
 
 /* return the Nth annotation offset from a DexAnnotationSetItem */
 DEX_INLINE u4 dexGetAnnotationOff(
-    const DexAnnotationSetItem* pAnnoSet, u4 idx)
+	const DexAnnotationSetItem* pAnnoSet, u4 idx)
 {
-    assert(idx < pAnnoSet->size);
-    return pAnnoSet->entries[idx];
+	assert(idx < pAnnoSet->size);
+	return pAnnoSet->entries[idx];
 }
 
 /* return the Nth annotation item from a DexAnnotationSetItem */
 DEX_INLINE const DexAnnotationItem* dexGetAnnotationItem(
-    const DexFile* pDexFile, const DexAnnotationSetItem* pAnnoSet, u4 idx)
+	const DexFile* pDexFile, const DexAnnotationSetItem* pAnnoSet, u4 idx)
 {
-    u4 offset = dexGetAnnotationOff(pAnnoSet, idx);
-    if (offset == 0) {
-        return NULL;
-    }
-    return (const DexAnnotationItem*) (pDexFile->baseAddr + offset);
+	u4 offset = dexGetAnnotationOff(pAnnoSet, idx);
+	if (offset == 0) {
+		return NULL;
+	}
+	return (const DexAnnotationItem*)(pDexFile->baseAddr + offset);
 }
 
 /*
