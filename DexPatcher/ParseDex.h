@@ -14,6 +14,7 @@
 
 #pragma once
 #include "DexFile.h"
+#include <Windows.h>
 #define OUT
 
 class ParseDex
@@ -26,7 +27,12 @@ public:
 	}
 	ParseDex(const char* filePath)
 	{
-		openDexFile(filePath);
+		if (!openDexFile(filePath))
+		{
+			int error = GetLastError();
+			printf("error:%d\n", error);
+
+		}
 	}
 
 
@@ -34,9 +40,10 @@ public:
 	{
 		return mDexFile;
 	}
-	void setDexFile(DexFile* buffer)
+
+	char* getDexBuffer()
 	{
-		mDexFile = buffer;
+		return mDexBuffer;
 	}
 
 
@@ -65,30 +72,19 @@ public:
 	bool checkValidity();
 
 	/// <summary>
-	/// 修复Dex Magic信息
+	/// 获取code偏移
 	/// </summary>
-	void fixDexMagic();
+	/// <param name="methodIdx">函数索引</param>
+	/// <returns>偏移</returns>
+	int getCodeOffset(int methodIdx);
 
 
-	void parseDexClassDef();
-
-	void parseDexMethod(int methodIdx);
-
-	void fixMethod(int methodIdx, char* codeItem,int codeItemLength);
-
-	int getCodeOffset(ClassDataItem* classDataItem,int methodIdx);
-
-	char* getString(int stringIdx);
-	int getType(int typeIdx);
-
-	
-	void parseClassDataItem(u1* classData, OUT ClassDataItem* classDataItem);
 
 
 
 private:
 	/// <summary>
-	/// The dex file
+	/// DexFile对象指针,指向和mDexBuffer相同的内存区域
 	/// </summary>
 	DexFile* mDexFile = NULL;
 
@@ -96,6 +92,34 @@ private:
 	char* mFileName = NULL;
 	char* mDexBuffer = NULL;
 	int mFileSize = 0;
+
+	/// <summary>
+	/// 获取method对应的类信息
+	/// </summary>
+	/// <param name="dexMethodId"></param>
+	/// <param name="dexClassDef"></param>
+	void getMethodClassDef(DexMethodId* dexMethodId, OUT DexClassDef** dexClassDef);
+
+	/// <summary>
+	/// 从string_ids里获取索引为stringIdx的项
+	/// </summary>
+	/// <param name="stringIdx">string_ids索引</param>
+	/// <returns>字符串</returns>
+	char* getString(int stringIdx);
+
+	/// <summary>
+	/// 从type_ids里获取索引为typeIdx的项
+	/// </summary>
+	/// <param name="typeIdx">type_ids索引</param>
+	/// <returns>type的描述,值为string_ids索引</returns>
+	int getType(int typeIdx);
+
+	/// <summary>
+	/// 解析ClassDef->ClassData
+	/// </summary>
+	/// <param name="classData"></param>
+	/// <param name="classDataItem">传出参数</param>
+	void parseClassDataItem(u1* classData, OUT ClassDataItem* classDataItem);
 
 };
 

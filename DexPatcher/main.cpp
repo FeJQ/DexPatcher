@@ -3,14 +3,16 @@
 
 #include <iostream>
 #include "ParseDex.h"
+#include "PatchDex.h"
+#include "aupk.h"
 
 int main()
 {
+	int result=art::isFakeInvoke(2,3);
+
 	ParseDex* parseDex = new ParseDex("C:\\Users\\love0\\Desktop\\apps\\趣智校园\\aupk\\8273364_Execute.dex");
-	//char* magic = (char*)parseDex->getDexFile()->pHeader->magic;
-	//parseDex->saveDexFile();
-	//parseDex->parseDexClassDef();
-	parseDex->fixMethod(25417,NULL);
+	PatchDex* patchDex = new PatchDex(parseDex);
+	patchDex->fixMethod(24441, NULL, 0);
 	system("pause");
 
 }

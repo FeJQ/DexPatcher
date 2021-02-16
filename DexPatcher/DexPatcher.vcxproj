@@ -143,13 +143,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aupk.cpp" />
+    <ClCompile Include="cJSON.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ParseDex.cpp" />
+    <ClCompile Include="PatchDex.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aupk.h" />
+    <ClInclude Include="cJSON.h" />
     <ClInclude Include="DexFile.h" />
     <ClInclude Include="ParseDex.h" />
+    <ClInclude Include="PatchDex.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
