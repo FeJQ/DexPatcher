@@ -24,13 +24,10 @@
     <ClCompile Include="Utils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cJSON.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="aupk.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="PatchDex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Build.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,13 +41,13 @@
     <ClInclude Include="Utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cJSON.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="aupk.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="PatchDex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Build.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

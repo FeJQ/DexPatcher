@@ -1,8 +1,13 @@
 #include "PatchDex.h"
-#include "cJSON.h"
 #include "Utils.h"
+#include <iostream>
+#include <string>
+#include "json.hpp"
+#include <fstream>
 
+using json = nlohmann::json;
 using namespace Utils;
+using namespace std;
 
 /// <summary>
 /// 修复Dex Magic信息
@@ -27,7 +32,7 @@ void PatchDex::fixDexMagic()
 /// <param name="codeItemLength">Length of the code item.</param>
 void PatchDex::fixMethod(int methodIdx, char* codeItem, int codeItemLength)
 {
-	parseMethodInfo();
+	parseMethodInfo(nullptr);
 
 	int codeOffset = mParseDex->getCodeOffset(methodIdx);
 	// 解析并修复
@@ -40,19 +45,27 @@ void PatchDex::fixMethod(int methodIdx, char* codeItem, int codeItemLength)
 	memcpy(dexCode->insns, codeItem, dexCode->insnsSize * 2);
 }
 
-void PatchDex::parseMethodInfo()
+void PatchDex::parseMethodInfo(char*fileName)
 {
-	int fileSize = 0;
-	File::openFile("C:\\Users\\love0\\Desktop\\json.json", &fileSize, &mMethodInfoBuffer);
-	cJSON* jsonObj = cJSON_Parse(mMethodInfoBuffer);
-	cJSON* arrayItem = cJSON_GetObjectItem(jsonObj, "data");
-	cJSON* method = cJSON_GetArrayItem(arrayItem, 0);
-	for (int i = 0; i < cJSON_GetArraySize(arrayItem); i++)
+	//int fileSize = 0;
+	//File::openFile("C:\\Users\\love0\\Desktop\\json.json", &fileSize, &mMethodInfoBuffer);
+
+	json root;
+	fstream file;
+	file.open(fileName, ios::in);
+	if (file.is_open())
 	{
-		cJSON* nameItem = cJSON_GetObjectItem(method, "name");
-		cJSON* methodIndexItem = cJSON_GetObjectItem(method, "methodIndex");
-		cJSON* offsetItem = cJSON_GetObjectItem(method, "offset");
-		cJSON* codeItemLengthItem = cJSON_GetObjectItem(method, "codeItemLength");
-		cJSON* insItem = cJSON_GetObjectItem(method, "ins");
+		file >> root;
+		int count = root["count"];
+		for (int i = 0; i < root["data"].size(); i++)
+		{
+			string name;
+			root["data"][i]["name"].get_to(name);
+			root["data"][i]["name"].get_to(name);
+			root["data"][i]["name"].get_to(name);
+			root["data"][i]["name"].get_to(name);
+			root["data"][i]["name"].get_to(name);
+		}
 	}
+	file.close();
 }

@@ -9,6 +9,19 @@ public:
 	{
 		this->mParseDex = parseDex;
 	}
+	~PatchDex()
+	{
+		if (mParseDex != NULL)
+		{
+			delete mParseDex; 
+			mParseDex = NULL;
+		}
+		if (mMethodInfoBuffer != NULL)
+		{
+			delete mMethodInfoBuffer;
+			mMethodInfoBuffer = NULL;
+		}
+	}
 
 	/// <summary>
 	/// –ﬁ∏¥Dex Magic–≈œ¢
@@ -23,11 +36,11 @@ public:
 	/// <param name="codeItemLength">Length of the code item.</param>
 	void fixMethod(int methodIdx, char* codeItem, int codeItemLength);
 
-	void parseMethodInfo();
+	void parseMethodInfo(char* fileName);
 
 private:
-	ParseDex* mParseDex=NULL;
+	ParseDex* mParseDex = NULL;
 
-	char* mMethodInfoBuffer=NULL;
+	char* mMethodInfoBuffer = NULL;
 };
 

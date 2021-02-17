@@ -34,6 +34,24 @@ public:
 
 		}
 	}
+	~ParseDex()
+	{
+		if (mDexBuffer != NULL)
+		{
+			delete mDexBuffer;
+			mDexBuffer = NULL;
+		}
+		if (mFileName != NULL)
+		{
+			delete mFileName;
+			mFileName = NULL;
+		}
+		if (mFilePath != NULL)
+		{
+			delete mFilePath;
+			mFilePath = NULL;
+		}
+	}
 
 
 	DexFile* getDexFile()
