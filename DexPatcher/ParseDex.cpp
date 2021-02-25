@@ -16,7 +16,11 @@
 #include "ParseDex.h"
 #include <iostream>
 #include "Utils.h"
+#include <vector>
 using namespace Utils;
+using namespace std;
+
+
 
 
 /// <summary>
@@ -73,8 +77,8 @@ bool ParseDex::saveDexFile()
 	sprintf_s(fileName, "%s%s_patched.dex", path, fileNameWithoutExtension);
 
 	// 保存文件
-	Utils::File::saveFile(mDexBuffer, fileName, mFileSize);
-	return false;
+	bool result = File::saveFile(mDexBuffer, fileName, mFileSize);
+	return result;
 }
 
 /// <summary>
@@ -98,8 +102,8 @@ void ParseDex::closeDexFile()
 		mDexBuffer = NULL;
 		mDexFile = NULL;
 	}
-	
-	
+
+
 }
 
 /// <summary>
@@ -134,107 +138,16 @@ bool ParseDex::checkValidity()
 
 
 /// <summary>
-/// 获取method对应的类信息
-/// </summary>
-/// <param name="dexMethodId"></param>
-/// <param name="dexClassDef"></param>
-void ParseDex::getMethodClassDef(DexMethodId* dexMethodId, OUT DexClassDef** dexClassDef)
-{
-	bool flag1 = false;
-	bool flag2 = false;
-	*dexClassDef = (DexClassDef*)(mDexBuffer + mDexFile->pHeader->classDefsOff);
-	for (int i = 0; i < mDexFile->pHeader->classDefsSize; i++)
-	{
-		int type1 = getType(dexMethodId->classIdx);
-		int type2 = getType((*dexClassDef)[i].classIdx);
-		char* className1 = getString(type1);
-		char* className2 = getString(type2);
-
-		flag1 = false;
-		flag2 = false;
-
-		if (type1 == type2)
-		{
-			flag1 = true;
-		}
-		if (strcmp(className1, className2) == 0)
-		{
-			flag2 = true;
-		}
-		if (flag1 != flag2)
-		{
-			printf("flag1!=flag2 异常!!!");
-			throw;
-		}
-		if (flag1 == true && flag2 == true)
-		{
-			*dexClassDef += i;
-			break;
-		}
-	}
-}
-
-/// <summary>
-/// 获取code偏移
-/// </summary>
-/// <param name="methodIdx">函数索引</param>
-/// <returns>偏移</returns>
-int ParseDex::getCodeOffset(int methodIdx)
-{
-	// 获取methodIdx对应的method_ids_item
-	DexMethodId* dexMethodId = (DexMethodId*)(mDexBuffer + mDexFile->pHeader->methodIdsOff);
-	dexMethodId += methodIdx;
-
-	// Method对应的DexClassDefItem信息
-	DexClassDef* dexClassDef = NULL;
-	getMethodClassDef(dexMethodId, &dexClassDef);
-
-	// 获取classData偏移地址
-	u1* classData = (u1*)mDexBuffer + dexClassDef->classDataOff;
-	// 获取ClassDataItem
-	ClassDataItem classDataItem;
-	parseClassDataItem(classData, &classDataItem);
-
-	int codeOffset = NULL;
-	int directMethodIdx = 0;
-	for (int i = 0; i < classDataItem.directMethodsSize; i++)
-	{
-		if (classDataItem.directMethods[i].method_idx_diff == methodIdx)
-		{
-			codeOffset = classDataItem.directMethods[i].code_off;
-			return codeOffset;
-		}
-		directMethodIdx += classDataItem.directMethods[i].method_idx_diff;
-	}
-
-	int virtualMethodIdx = 0;
-	for (int i = 0; i < classDataItem.virtualMethodsSize; i++)
-	{
-		if (classDataItem.virtualMethods[i].method_idx_diff == methodIdx)
-		{
-			codeOffset = classDataItem.virtualMethods[i].code_off;
-			return codeOffset;;
-		}
-		virtualMethodIdx += classDataItem.virtualMethods[i].method_idx_diff;
-	}
-	if (codeOffset == NULL)
-	{
-		printf("未找到函数对应的codeOffset");
-	}
-	return codeOffset;
-}
-
-/// <summary>
 /// 从string_ids里获取索引为stringIdx的项
 /// </summary>
 /// <param name="stringIdx">string_ids索引</param>
 /// <returns>字符串</returns>
-char* ParseDex::getString(int stringIdx)
+string ParseDex::getString(int stringIdx)
 {
 	int* stringIdsOff = (int*)(mDexBuffer + mDexFile->pHeader->stringIdsOff);
 	char* str = mDexBuffer + stringIdsOff[stringIdx];
 	Leb128::decodeUnsignedLeb128((u1**)&str);
-	return str;
+	return string(str);
 }
 
 /// <summary>
@@ -245,80 +158,133 @@ char* ParseDex::getString(int stringIdx)
 int ParseDex::getType(int typeIdx)
 {
 	int* typeIdsOff = (int*)(mDexBuffer + mDexFile->pHeader->typeIdsOff);
-
+	if (mDexFile->pHeader->typeIdsOff != 203032)
+	{
+		int a = 0;
+	}
 	int* type = typeIdsOff + typeIdx;
+	if (*type < 0)
+	{
+		int a = 0;
+	}
 	return *type;
 }
 
 /// <summary>
-/// 解析ClassDef->ClassData
+/// 获取函数的名字
 /// </summary>
-/// <param name="classData"></param>
-/// <param name="classDataItem">传出参数</param>
-void ParseDex::parseClassDataItem(u1* classData, OUT ClassDataItem* classDataItem)
+/// <param name="methodIdx">函数索引</param>
+/// <returns>函数名</returns>
+string ParseDex::getMethodName(int methodIdx)
 {
-	classDataItem->staticFiledsSize = Leb128::decodeUnsignedLeb128(&classData);
-	classDataItem->instanceFieldsSize = Leb128::decodeUnsignedLeb128(&classData);
-	classDataItem->directMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
-	classDataItem->virtualMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
+	DexMethodId *method=(DexMethodId*)(mDexBuffer + mDexFile->pHeader->methodIdsOff);
+	if (methodIdx < 0 || methodIdx >=mDexFile->pHeader->methodIdsSize)
+	{
+		throw "methodIdx 错误";
+		return nullptr;
+	}
+	string methodName=getString(method[methodIdx].nameIdx);
+	return methodName;
+}
 
-	//解析static_fields数组
-	EncodedField* staticField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem->staticFiledsSize);
-	if (staticField == NULL)
+void ParseDex::parseClassDataItem()
+{
+	// 获取class def表
+	DexClassDef* classDef = (DexClassDef*)(mDexBuffer + mDexFile->pHeader->classDefsOff);
+	// 获取class def表的项数
+	int size = mDexFile->pHeader->classDefsSize;
+	for (int i = 0; i < size; i++)
 	{
-		throw "内存申请失败";
-	}
-	memset(staticField, 0, sizeof(EncodedField) * classDataItem->staticFiledsSize);
-	classDataItem->staticFields = staticField;
-	for (int i = 0; i < classDataItem->staticFiledsSize; i++)
-	{
-		staticField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-		staticField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
-	}
+		//ClassDataItem* classDataItem = (ClassDataItem*)(mDexBuffer + classDef[i].classDataOff);
+		ClassDataItem classDataItem;
+		u1* classData = (u1*)(mDexBuffer + classDef[i].classDataOff);
+		classDataItem.staticFiledsSize = Leb128::decodeUnsignedLeb128(&classData);
+		classDataItem.instanceFieldsSize = Leb128::decodeUnsignedLeb128(&classData);
+		classDataItem.directMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
+		classDataItem.virtualMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
 
-	//解析instance_fields数组
-	EncodedField* instanceField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem->instanceFieldsSize);
-	if (staticField == NULL)
-	{
-		throw "内存申请失败";
-	}
-	memset(instanceField, 0, sizeof(EncodedField) * classDataItem->instanceFieldsSize);
-	classDataItem->instanceFields = instanceField;
-	for (int i = 0; i < classDataItem->instanceFieldsSize; i++)
-	{
-		instanceField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-		instanceField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
-	}
+		//解析static_fields数组
+		EncodedField* staticField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem.staticFiledsSize);
+		if (staticField == NULL)
+		{
+			throw "内存申请失败";
+		}
+		memset(staticField, 0, sizeof(EncodedField) * classDataItem.staticFiledsSize);
+		classDataItem.staticFields = staticField;
+		for (int i = 0; i < classDataItem.staticFiledsSize; i++)
+		{
+			staticField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			staticField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+		}
 
-	// 解析直接方法
-	EncodedMethod* directMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->directMethodsSize);
-	if (staticField == NULL)
-	{
-		throw "内存申请失败";
-	}
-	memset(directMethod, 0, sizeof(EncodedMethod) * classDataItem->directMethodsSize);
-	classDataItem->directMethods = directMethod;
-	for (int i = 0; i < classDataItem->directMethodsSize; i++)
-	{
-		directMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-		directMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
-		directMethod[i].code_off = Leb128::decodeUnsignedLeb128(&classData);
-	}
+		//解析instance_fields数组
+		EncodedField* instanceField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem.instanceFieldsSize);
+		if (instanceField == NULL)
+		{
+			throw "内存申请失败";
+		}
+		memset(instanceField, 0, sizeof(EncodedField) * classDataItem.instanceFieldsSize);
+		classDataItem.instanceFields = instanceField;
+		for (int i = 0; i < classDataItem.instanceFieldsSize; i++)
+		{
+			instanceField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			instanceField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+		}
 
-	//解析虚方法
-	EncodedMethod* virtualMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
-	if (staticField == NULL)
-	{
-		throw "内存申请失败";
-	}
-	memset(virtualMethod, 0, sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
-	classDataItem->virtualMethods = virtualMethod;
-	for (int i = 0; i < classDataItem->virtualMethodsSize; i++)
-	{
-		virtualMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-		virtualMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
-		virtualMethod[i].code_off = Leb128::decodeUnsignedLeb128(&classData);
+		// 解析直接方法
+		//EncodedMethod* directMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->directMethodsSize);
+		//if (directMethod == NULL)
+		//{
+		//	throw "内存申请失败";
+		//}
+		//memset(directMethod, 0, sizeof(EncodedMethod) * classDataItem->directMethodsSize);
+		//classDataItem->directMethods = directMethod;
+		int directMethodIdx = 0;
+		for (int i = 0; i < classDataItem.directMethodsSize; i++)
+		{
+			//directMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			//directMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+			//directMethod[i].code_off = Leb128::decodeUnsignedLeb128(&classData);
+			ClassDefMethod* method = new ClassDefMethod();
+			int method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			directMethodIdx += method_idx_diff;
+			method->index = directMethodIdx;
+			method->accessFlags = Leb128::decodeUnsignedLeb128(&classData);
+			method->codeOffset = Leb128::decodeUnsignedLeb128(&classData);
+			if (method->codeOffset != 0)
+			{
+				classDefMethods.push_back(method);
+			}
+		}
+
+		//解析虚方法
+		//EncodedMethod* virtualMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
+		//if (virtualMethod == NULL)
+		//{
+		//	throw "内存申请失败";
+		//}
+		//memset(virtualMethod, 0, sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
+		//classDataItem->virtualMethods = virtualMethod;
+		int virtualMethodIdx = 0;
+		for (int i = 0; i < classDataItem.virtualMethodsSize; i++)
+		{
+			//virtualMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			//virtualMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+			//virtualMethod[i].code_off = Leb128::decodeUnsignedLeb128(&classData);
+			ClassDefMethod* method = new ClassDefMethod();
+			int method_idx_diff= Leb128::decodeUnsignedLeb128(&classData);
+			virtualMethodIdx += method_idx_diff;
+			method->index = virtualMethodIdx;
+			method->accessFlags = Leb128::decodeUnsignedLeb128(&classData);
+			method->codeOffset = Leb128::decodeUnsignedLeb128(&classData);
+			if (method->codeOffset != 0)
+			{
+				classDefMethods.push_back(method);
+			}
+			
+		}
 	}
 }
+
 
 

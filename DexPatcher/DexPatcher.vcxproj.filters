@@ -30,6 +30,9 @@
     <ClCompile Include="Build.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ParseDex.h">
@@ -48,6 +51,66 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\argument_caster.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\argument_holder.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\all.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\common_checker.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\incorrect_parameters.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\necessary_parameters.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\parameters_existence.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\parameters_redundancy.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\parameters_repetition.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\values_correction.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\checkers\values_semantic.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\misc.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\parameter.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\parameter_parts_extractor.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\types.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\unnamed_parameters_handler.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\detail\user_functions_caller.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clpp\parser.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cmdline.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

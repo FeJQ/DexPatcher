@@ -1,71 +1,165 @@
 #include "PatchDex.h"
 #include "Utils.h"
 #include <iostream>
-#include <string>
 #include "json.hpp"
 #include <fstream>
+#include <map>
+#include <sstream>
 
 using json = nlohmann::json;
 using namespace Utils;
-using namespace std;
+
 
 /// <summary>
 /// 修复Dex Magic信息
 /// </summary>
-void PatchDex::fixDexMagic()
+void PatchDex::fixDexMagic(bool isSave)
 {
-	if (mParseDex->checkValidity())
+	if (checkValidity())
 	{
 		return;
 	}
-	const u1* magic = mParseDex->getDexFile()->pHeader->magic;
+	const u1* magic = getDexFile()->pHeader->magic;
 	const u1* version = &magic[4];
 	memcpy((void*)magic, DEX_MAGIC_VERS, 4);
 	memcpy((void*)version, DEX_MAGIC_VERS_API_13, 4);
+	cout << "Fixed Dex Magic" << endl;
+	if (isSave)
+	{
+		if (saveDexFile())
+		{
+			cout << "All operations completed" << endl;
+		}
+		else
+		{
+			cout << "save file failed" << endl;
+		}
+	}
 }
+
 
 /// <summary>
 /// 修复被抽取的函数
 /// </summary>
-/// <param name="methodIdx">函数索引</param>
-/// <param name="codeItem">The code item.</param>
-/// <param name="codeItemLength">Length of the code item.</param>
-void PatchDex::fixMethod(int methodIdx, char* codeItem, int codeItemLength)
+/// <param name="dexFilePath">The dex file path.</param>
+/// <param name="methodInfoPath">The method information path.</param>
+void PatchDex::fixMethod(string methodInfoPath)
 {
-	parseMethodInfo(nullptr);
+	parseClassDataItem();
+	parseMethodInfo(methodInfoPath);
+	fixDexMagic(false);
 
-	int codeOffset = mParseDex->getCodeOffset(methodIdx);
-	// 解析并修复
-	DexCode* dexCode = (DexCode*)(mParseDex->getDexBuffer() + codeOffset);
-	if (codeItemLength != dexCode->insnsSize * 2)
+	cout << classDefMethods.size() << " methods to be fixed" << endl;
+	int fixedNumber = 0;
+	int notFixedNumber = 0;
+	for (int i = 0; i < classDefMethods.size(); i++)
 	{
-		printf("codeItemLength != dexCode->insnsSize * 2 异常!!!");
-		throw;
-	}
-	memcpy(dexCode->insns, codeItem, dexCode->insnsSize * 2);
-}
-
-void PatchDex::parseMethodInfo(char*fileName)
-{
-	//int fileSize = 0;
-	//File::openFile("C:\\Users\\love0\\Desktop\\json.json", &fileSize, &mMethodInfoBuffer);
-
-	json root;
-	fstream file;
-	file.open(fileName, ios::in);
-	if (file.is_open())
-	{
-		file >> root;
-		int count = root["count"];
-		for (int i = 0; i < root["data"].size(); i++)
+		bool isRepaired = false;
+		ClassDefMethod* classDefMethod = classDefMethods[i];
+		string methodName = "null";
+		for (int j = 0; j < methods.size(); j++)
 		{
-			string name;
-			root["data"][i]["name"].get_to(name);
-			root["data"][i]["name"].get_to(name);
-			root["data"][i]["name"].get_to(name);
-			root["data"][i]["name"].get_to(name);
-			root["data"][i]["name"].get_to(name);
+			if (classDefMethod->index == methods[j]->methodIndex)
+			{
+				// 解析并修复
+				DexCode* dexCode = (DexCode*)(getDexBuffer() + classDefMethod->codeOffset);
+				int outLen;
+				char* codeItem = NULL;
+				Utils::Base64::decode(methods[j]->codeItem.c_str(), methods[j]->codeItem.size(), &codeItem, &outLen);
+
+				memcpy(dexCode, codeItem, outLen);
+
+				free(codeItem);
+				isRepaired = true;
+				methodName = methods[j]->methodName;
+				break;
+			}
+		}	
+		if (!isRepaired)
+		{
+			notFixedNumber++;
+			methodName = getMethodName(classDefMethod->index);
+			//cout << "method information not found:" << methodName << endl;
+		}
+		else
+		{
+			fixedNumber++;
+			cout << "Fixed method[" << i + 1 <<"/"<< classDefMethods.size() << "]:" << methodName << endl;
 		}
 	}
-	file.close();
+	cout << "Total:" << classDefMethods.size() << endl;
+	cout << "Fixed:" << fixedNumber << endl;
+	cout << "Not being fixed:" << notFixedNumber << endl;
+
+	if (saveDexFile())
+	{
+		cout << "All operations completed" << endl;
+	}
+	else
+	{
+		cout << "save file failed" << endl;
+	}
 }
+
+void PatchDex::parseMethodInfo(string methodInfoPath)
+{
+	fstream file;
+	file.open(methodInfoPath, ios::in);
+	if (!file.is_open())
+	{
+		cout << "open file:" << methodInfoPath << " failed" << endl;
+		throw "open file failed";
+		return;
+	}
+	json root;
+	try
+	{
+		file >> root;
+		file.close();
+	}
+	catch (const std::exception&)
+	{
+		cout << "parse file:" << methodInfoPath << " failed" << endl;
+		throw "parse file failed";
+		return;
+	}
+	if (root.contains("count"))
+	{
+		//cout << "method count:" << root["count"] << endl;
+	}
+	if (root.contains("data"))
+	{
+		for (int i = 0; i < root["data"].size(); i++)
+		{
+			MethodInfo* method = new MethodInfo();
+			method->methodName = "";
+			method->methodIndex = 0;
+			method->methodOffset = 0;
+			method->codeItemLength = 0;
+			method->codeItem = "";
+			if (root["data"][i].contains("name"))
+			{
+				methods.push_back(method);
+				method->methodName = root["data"][i]["name"];
+			}
+			if (root["data"][i].contains("index"))
+			{
+				method->methodIndex = root["data"][i]["index"];
+			}
+			if (root["data"][i].contains("offset"))
+			{
+				method->methodOffset = root["data"][i]["offset"];
+			}
+			if (root["data"][i].contains("codeItemLength"))
+			{
+				method->codeItemLength = root["data"][i]["codeItemLength"];
+			}
+			if (root["data"][i].contains("inst"))
+			{
+				method->codeItem = root["data"][i]["inst"];
+			}
+		}
+	}
+}
+
+

@@ -1,46 +1,55 @@
 #pragma once
 
 #include "ParseDex.h"
-class PatchDex
+#include <string>
+#include <vector>
+using namespace std;
+#define override 
+
+struct MethodInfo
+{
+	string methodName;
+	int methodIndex;
+	int methodOffset;
+	int codeItemLength;
+	// 16byte+指令长度+try块
+	string codeItem;
+};
+
+class PatchDex :public ParseDex
 {
 public:
-
-	PatchDex(ParseDex* parseDex)
+	PatchDex(string dexFilePath) :ParseDex(dexFilePath.c_str())
 	{
-		this->mParseDex = parseDex;
 	}
 	~PatchDex()
 	{
-		if (mParseDex != NULL)
+		for (int i = 0; i < methods.size(); i++)
 		{
-			delete mParseDex; 
-			mParseDex = NULL;
-		}
-		if (mMethodInfoBuffer != NULL)
-		{
-			delete mMethodInfoBuffer;
-			mMethodInfoBuffer = NULL;
+			MethodInfo* method = methods[i];
+			delete method;
 		}
 	}
 
 	/// <summary>
 	/// 修复Dex Magic信息
 	/// </summary>
-	void fixDexMagic();
+	override void fixDexMagic(bool isSave);
 
 	/// <summary>
 	/// 修复被抽取的函数
 	/// </summary>
-	/// <param name="methodIdx">函数索引</param>
-	/// <param name="codeItem">The code item.</param>
-	/// <param name="codeItemLength">Length of the code item.</param>
-	void fixMethod(int methodIdx, char* codeItem, int codeItemLength);
+	/// <param name="methodInfoPath">The method information path.</param>
+	override void fixMethod(string methodInfoPath);
+	 
+	// 用于存储dump下来的存有信息
+	vector< MethodInfo*> methods;
 
-	void parseMethodInfo(char* fileName);
-
-private:
-	ParseDex* mParseDex = NULL;
-
-	char* mMethodInfoBuffer = NULL;
+	/// <summary>
+	/// 解析dump下来的函数信息
+	/// 并将所有信息添加到methods
+	/// </summary>
+	/// <param name="methodInfoPath">The method information path.</param>
+	void parseMethodInfo(string methodInfoPath);
 };
 

@@ -15,23 +15,35 @@
 #pragma once
 #include "DexFile.h"
 #include <Windows.h>
+#include <vector>
+#include <string>
+
 #define OUT
+
+using namespace std;
+
+struct ClassDefMethod
+{
+	u4 accessFlags;
+	u4 index;
+	u4 codeOffset;
+};
 
 class ParseDex
 {
 public:
 
+	
 	ParseDex()
 	{
-
+		
 	}
 	ParseDex(const char* filePath)
 	{
 		if (!openDexFile(filePath))
 		{
 			int error = GetLastError();
-			printf("error:%d\n", error);
-
+			printf("openDexFile failed:%d\n", error);
 		}
 	}
 	~ParseDex()
@@ -51,6 +63,11 @@ public:
 			delete mFilePath;
 			mFilePath = NULL;
 		}
+		for (int i = 0; i < classDefMethods.size(); i++)
+		{
+			ClassDefMethod* method = classDefMethods[i];
+			delete method;
+		}
 	}
 
 
@@ -62,6 +79,10 @@ public:
 	char* getDexBuffer()
 	{
 		return mDexBuffer;
+	}
+	char* getFilePath()
+	{
+		return mFilePath;
 	}
 
 
@@ -89,16 +110,24 @@ public:
 	/// <returns>是否有效</returns>
 	bool checkValidity();
 
+	virtual void fixMagic() {};
+	virtual void fixMethod(string methodInfoPath) {};
+	
 	/// <summary>
-	/// 获取code偏移
+	/// 获取函数的名字
 	/// </summary>
 	/// <param name="methodIdx">函数索引</param>
-	/// <returns>偏移</returns>
-	int getCodeOffset(int methodIdx);
-
-
-
-
+	/// <returns>函数名</returns>
+	string getMethodName(int methodIdx);
+	
+	// 用于存储dex内所有的函数信息
+	vector<ClassDefMethod*> classDefMethods;
+	
+	/// <summary>
+	/// 解析class_data
+	/// 并将所有的函数信息添加到classDefMethods
+	/// </summary>
+	void parseClassDataItem();
 
 private:
 	/// <summary>
@@ -112,18 +141,11 @@ private:
 	int mFileSize = 0;
 
 	/// <summary>
-	/// 获取method对应的类信息
-	/// </summary>
-	/// <param name="dexMethodId"></param>
-	/// <param name="dexClassDef"></param>
-	void getMethodClassDef(DexMethodId* dexMethodId, OUT DexClassDef** dexClassDef);
-
-	/// <summary>
 	/// 从string_ids里获取索引为stringIdx的项
 	/// </summary>
 	/// <param name="stringIdx">string_ids索引</param>
 	/// <returns>字符串</returns>
-	char* getString(int stringIdx);
+	string getString(int stringIdx);
 
 	/// <summary>
 	/// 从type_ids里获取索引为typeIdx的项
@@ -132,12 +154,6 @@ private:
 	/// <returns>type的描述,值为string_ids索引</returns>
 	int getType(int typeIdx);
 
-	/// <summary>
-	/// 解析ClassDef->ClassData
-	/// </summary>
-	/// <param name="classData"></param>
-	/// <param name="classDataItem">传出参数</param>
-	void parseClassDataItem(u1* classData, OUT ClassDataItem* classDataItem);
-
+	
 };
 
