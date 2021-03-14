@@ -78,6 +78,10 @@ bool ParseDex::saveDexFile()
 
 	// 保存文件
 	bool result = File::saveFile(mDexBuffer, fileName, mFileSize);
+	if (result)
+	{
+		cout << "Saved file to:" << fileName << END;
+	}
 	return result;
 }
 
@@ -195,15 +199,19 @@ void ParseDex::parseClassDataItem()
 	int size = mDexFile->pHeader->classDefsSize;
 	for (int i = 0; i < size; i++)
 	{
-		//ClassDataItem* classDataItem = (ClassDataItem*)(mDexBuffer + classDef[i].classDataOff);
 		ClassDataItem classDataItem;
+		if (classDef[i].classDataOff == 0)
+		{
+			// 有些classDef没有class_data,其class_data_off为0,所以直接跳过
+			continue;
+		}
 		u1* classData = (u1*)(mDexBuffer + classDef[i].classDataOff);
 		classDataItem.staticFiledsSize = Leb128::decodeUnsignedLeb128(&classData);
 		classDataItem.instanceFieldsSize = Leb128::decodeUnsignedLeb128(&classData);
 		classDataItem.directMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
 		classDataItem.virtualMethodsSize = Leb128::decodeUnsignedLeb128(&classData);
 
-		//解析static_fields数组
+		// 解析static_fields数组
 		EncodedField* staticField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem.staticFiledsSize);
 		if (staticField == NULL)
 		{
@@ -211,13 +219,13 @@ void ParseDex::parseClassDataItem()
 		}
 		memset(staticField, 0, sizeof(EncodedField) * classDataItem.staticFiledsSize);
 		classDataItem.staticFields = staticField;
-		for (int i = 0; i < classDataItem.staticFiledsSize; i++)
+		for (int j = 0; j < classDataItem.staticFiledsSize; j++)
 		{
-			staticField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-			staticField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+			staticField[j].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			staticField[j].access_flags = Leb128::decodeUnsignedLeb128(&classData);
 		}
 
-		//解析instance_fields数组
+		// 解析instance_fields数组
 		EncodedField* instanceField = (EncodedField*)malloc(sizeof(EncodedField) * classDataItem.instanceFieldsSize);
 		if (instanceField == NULL)
 		{
@@ -225,13 +233,13 @@ void ParseDex::parseClassDataItem()
 		}
 		memset(instanceField, 0, sizeof(EncodedField) * classDataItem.instanceFieldsSize);
 		classDataItem.instanceFields = instanceField;
-		for (int i = 0; i < classDataItem.instanceFieldsSize; i++)
+		for (int j = 0; j < classDataItem.instanceFieldsSize; j++)
 		{
-			instanceField[i].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
-			instanceField[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
+			instanceField[j].filed_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
+			instanceField[j].access_flags = Leb128::decodeUnsignedLeb128(&classData);
 		}
 
-		// 解析直接方法
+		//  解析直接方法
 		//EncodedMethod* directMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->directMethodsSize);
 		//if (directMethod == NULL)
 		//{
@@ -240,7 +248,7 @@ void ParseDex::parseClassDataItem()
 		//memset(directMethod, 0, sizeof(EncodedMethod) * classDataItem->directMethodsSize);
 		//classDataItem->directMethods = directMethod;
 		int directMethodIdx = 0;
-		for (int i = 0; i < classDataItem.directMethodsSize; i++)
+		for (int j = 0; j < classDataItem.directMethodsSize; j++)
 		{
 			//directMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
 			//directMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
@@ -251,13 +259,14 @@ void ParseDex::parseClassDataItem()
 			method->index = directMethodIdx;
 			method->accessFlags = Leb128::decodeUnsignedLeb128(&classData);
 			method->codeOffset = Leb128::decodeUnsignedLeb128(&classData);
+			method->classDefIndex = i;
 			if (method->codeOffset != 0)
 			{
 				classDefMethods.push_back(method);
 			}
 		}
 
-		//解析虚方法
+		// 解析虚方法
 		//EncodedMethod* virtualMethod = (EncodedMethod*)malloc(sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
 		//if (virtualMethod == NULL)
 		//{
@@ -266,7 +275,7 @@ void ParseDex::parseClassDataItem()
 		//memset(virtualMethod, 0, sizeof(EncodedMethod) * classDataItem->virtualMethodsSize);
 		//classDataItem->virtualMethods = virtualMethod;
 		int virtualMethodIdx = 0;
-		for (int i = 0; i < classDataItem.virtualMethodsSize; i++)
+		for (int j = 0; j < classDataItem.virtualMethodsSize; j++)
 		{
 			//virtualMethod[i].method_idx_diff = Leb128::decodeUnsignedLeb128(&classData);
 			//virtualMethod[i].access_flags = Leb128::decodeUnsignedLeb128(&classData);
@@ -277,6 +286,7 @@ void ParseDex::parseClassDataItem()
 			method->index = virtualMethodIdx;
 			method->accessFlags = Leb128::decodeUnsignedLeb128(&classData);
 			method->codeOffset = Leb128::decodeUnsignedLeb128(&classData);
+			method->classDefIndex = i;
 			if (method->codeOffset != 0)
 			{
 				classDefMethods.push_back(method);

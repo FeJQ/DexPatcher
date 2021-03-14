@@ -1,3 +1,5 @@
 .vs/
 Debug/
 DexPatcher/Debug/
+DexPatcher/Release/
+Release/

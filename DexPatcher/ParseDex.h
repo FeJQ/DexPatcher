@@ -27,6 +27,7 @@ struct ClassDefMethod
 	u4 accessFlags;
 	u4 index;
 	u4 codeOffset;
+	u4 classDefIndex;
 };
 
 class ParseDex
@@ -111,7 +112,7 @@ public:
 	bool checkValidity();
 
 	virtual void fixMagic() {};
-	virtual void fixMethod(string methodInfoPath) {};
+	virtual void fixMethod(string methodInfoPath, bool noLog) {};
 	
 	/// <summary>
 	/// 获取函数的名字

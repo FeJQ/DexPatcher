@@ -16,7 +16,7 @@ struct MethodInfo
 	string codeItem;
 };
 
-class PatchDex :public ParseDex
+class PatchDex:public ParseDex
 {
 public:
 	PatchDex(string dexFilePath) :ParseDex(dexFilePath.c_str())
@@ -40,7 +40,8 @@ public:
 	/// 修复被抽取的函数
 	/// </summary>
 	/// <param name="methodInfoPath">The method information path.</param>
-	override void fixMethod(string methodInfoPath);
+	/// <param name="noLog">是否不打印日志信息</param>
+	override void fixMethod(string methodInfoPath, bool noLog);
 	 
 	// 用于存储dump下来的存有信息
 	vector< MethodInfo*> methods;
@@ -51,5 +52,17 @@ public:
 	/// </summary>
 	/// <param name="methodInfoPath">The method information path.</param>
 	void parseMethodInfo(string methodInfoPath);
+
+	
+
+	static void setProgress(float value) {
+		progress = value;
+	}
+
+	static float getProgress() {
+		return progress;
+	}
+private:
+	static float progress;
 };
 

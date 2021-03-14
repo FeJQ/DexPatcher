@@ -4,10 +4,16 @@
 #include <iostream>
 #include "Command.h"
 #include "Utils.h"
+#include <thread>
+
+using namespace std;
+
+
 
 
 int main(int argc, char* argv[])
 {
+
 	Command cmd;
 	cmd.initHandler(argc, argv);
 	return 0;

@@ -10,6 +10,6 @@ public:
 	void initHandler(int argc, char* argv[]);
 	static void handleVersion();
 	static void handleFixMagic(string dexFilePath);
-	static void handleFixMethod(string dexFilePath, string methodInfoPath);
+	static void handleFixMethod(string dexFilePath, string methodInfoPath, bool noLog);
 };
 

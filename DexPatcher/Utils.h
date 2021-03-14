@@ -1,11 +1,34 @@
 #pragma once
+
+#define WINDOWS
+
+
+
 #include <string.h>
-#include <Windows.h>
 #include "DexFile.h"
+#include <string>
+
+#ifdef WINDOWS
+#include <Windows.h>
+#endif 
+
 
 #define OUT 
+#ifdef _DEBUG
+#define END "\n"
+#else 
+#define END endl
+#endif
 namespace Utils
 {
+	static bool setTitle(std::string title)
+	{
+#ifdef WINDOWS
+		return SetConsoleTitleA(title.c_str());
+#endif 
+
+		
+	}
 	class File
 	{
 	public:

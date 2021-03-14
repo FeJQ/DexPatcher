@@ -3,6 +3,7 @@
 #include "Build.h"
 #include "ParseDex.h"
 #include "PatchDex.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ void Command::initHandler(int argc, char* argv[])
 	p->add("fix", 'f', "fix the dex file");
 	p->add<string>("dex-path", 'd', "the dex file path", false);
 	p->add<string>("json-path", 'j', "the json file path", false);
+	p->add("nolog", 'n', "don't print logs");
 	p->set_program_name("DexPatcher");
 
 	p->parse_check(argc, argv);
@@ -30,14 +32,14 @@ void Command::initHandler(int argc, char* argv[])
 		handleVersion();
 		return;
 	}
-
-	if (p->exist("fix"))
-	{
+	else if (p->exist("fix"))
+	{		
+		bool noLog = p->exist("nolog")?true:false;
 		if (p->exist("json-path") && p->exist("dex-path"))
 		{
 			string dexFilePath = p->get<string>("dex-path");
 			string methodInfoPath = p->get<string>("json-path");
-			handleFixMethod(dexFilePath, methodInfoPath);
+			handleFixMethod(dexFilePath, methodInfoPath, noLog);
 			return;
 		}
 		else if (p->exist("dex-path"))
@@ -48,7 +50,7 @@ void Command::initHandler(int argc, char* argv[])
 		}
 		else
 		{
-			cout << "dp fix -d dexFilePath<string> [-j methodInfoPath<string>]";
+			cout << "dp fix -d dexFilePath<string> [-j methodInfoPath<string>]" << END;
 			return;
 		}
 	}
@@ -71,10 +73,10 @@ void Command::handleFixMagic(string dexFilePath)
 	delete patchDex;
 }
 
-void Command::handleFixMethod(string dexFilePath, string methodInfoPath)
+void Command::handleFixMethod(string dexFilePath, string methodInfoPath, bool noLog)
 {
 	ParseDex* parseDex = new PatchDex(dexFilePath);
-	
-	parseDex->fixMethod(methodInfoPath);
+
+	parseDex->fixMethod(methodInfoPath,noLog);
 	delete parseDex;
 }
