@@ -122,6 +122,10 @@ void PatchDex::fixMethod(string methodInfoPath, bool noLog)
 
 }
 
+/// <summary>
+/// 解析dump下来的MethodInfo文件
+/// </summary>
+/// <param name="methodInfoPath">路径</param>
 void PatchDex::parseMethodInfo(string methodInfoPath)
 {
 	fstream file;
