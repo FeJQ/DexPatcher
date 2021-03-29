@@ -13,6 +13,18 @@ options:
   -?, --help         print this message
 ```
 
+###### 下载：
+
+百度网盘
+
+链接：https://pan.baidu.com/s/1aMspPKrz2LmkHyCKLMD1sw 
+提取码：aupk 
+or
+
+releases:https://github.com/FeJQ/DexPatcher/releases/tag/v0.1.0
+
+
+
 如：
 
 1. 通过AUPK得到`8273364_ExecuteSwitchImpl.dex`和`8273364_ExecuteSwitchImpl_method.json`两个文件
