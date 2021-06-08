@@ -43,7 +43,7 @@ bool ParseDex::openDexFile(const char* filePath)
 	{
 		return false;
 	}
-	strcpy_s(mFilePath, MAX_PATH, filePath);
+	strncpy(mFilePath, filePath, MAX_PATH);
 
 	// 保存带后缀的文件名
 	mFileName = (char*)malloc(MAX_PATH);
@@ -74,7 +74,7 @@ bool ParseDex::saveDexFile()
 
 	// 构造保存文件名
 	char fileName[MAX_PATH] = { 0 };
-	sprintf_s(fileName, "%s%s_patched.dex", path, fileNameWithoutExtension);
+	sprintf(fileName, "%s%s_patched.dex", path, fileNameWithoutExtension);
 
 	// 保存文件
 	bool result = File::saveFile(mDexBuffer, fileName, mFileSize);

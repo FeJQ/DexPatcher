@@ -65,3 +65,7 @@ releases:https://github.com/FeJQ/DexPatcher/releases/tag/v0.1.0
 + [cmdline](https://github.com/tanakh/cmdline)
 
 + [nlohmann/json](https://github.com/nlohmann/json)
+
+## mac os或linux系统编译 
+安装cmake编译程序， mac系统可通过brew install cmake安装。
+在DexPatcher源码子目录下建一个build子文件夹，cd build 并cmake ../, 然后在make命令即可编译生成对应平台的二进制程序.

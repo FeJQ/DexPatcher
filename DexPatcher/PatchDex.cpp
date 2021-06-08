@@ -96,7 +96,7 @@ void PatchDex::fixMethod(string methodInfoPath, bool noLog)
 
 			
 			char strProgress[64] = { 0 };
-			sprintf_s(strProgress,"[%3d%% %d/%d] ", (int)(getProgress() * 100), i + 1,classDefMethods.size());
+			sprintf(strProgress,"[%3d%% %d/%d] ", (int)(getProgress() * 100), i + 1,classDefMethods.size());
 			string strTitle = strProgress;
 			strTitle += methodName;
 			if (!noLog)
