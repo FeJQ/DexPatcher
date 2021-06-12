@@ -32,11 +32,11 @@ namespace Utils
 {
 	static bool setTitle(std::string title)
 	{
-#ifdef WINDOWS
+#ifdef _WIN32
 		return SetConsoleTitleA(title.c_str());
-#endif 
+#else
 		return false;
-		
+#endif 	
 	}
 	class File
 	{
