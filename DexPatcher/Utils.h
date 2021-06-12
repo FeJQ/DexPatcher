@@ -35,7 +35,7 @@ namespace Utils
 #ifdef WINDOWS
 		return SetConsoleTitleA(title.c_str());
 #endif 
-
+		return false;
 		
 	}
 	class File
