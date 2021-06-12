@@ -1,6 +1,10 @@
 #include "Build.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 void GetBuildDateBase(char* year, char* month, char* day)
 {
@@ -17,7 +21,7 @@ char* Build::GetBuildDate(void)
 {
 	char  year, month, day;
 	GetBuildDateBase(&year, &month, &day);//取编译时间
-	sprintf_s(g_dateBuffer, "20%02d.%02d.%02d", year, month, day);//任意格式化
+	sprintf(g_dateBuffer, "20%02d.%02d.%02d", year, month, day);//任意格式化
 	return g_dateBuffer;
 }
 

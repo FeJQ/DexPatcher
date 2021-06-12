@@ -14,7 +14,11 @@
 
 #pragma once
 #include "DexFile.h"
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <errno.h>
+#endif
 #include <vector>
 #include <string>
 
@@ -43,8 +47,12 @@ public:
 	{
 		if (!openDexFile(filePath))
 		{
+#ifdef _WIN32
 			int error = GetLastError();
 			printf("openDexFile failed:%d\n", error);
+#else
+                        printf("openDexFile failed:%d\n", errno);
+#endif
 		}
 	}
 	~ParseDex()

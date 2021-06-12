@@ -1,15 +1,24 @@
 #pragma once
 
-#define WINDOWS
-
+#include "config.h"
 
 
 #include <string.h>
 #include "DexFile.h"
 #include <string>
-
-#ifdef WINDOWS
+#include <errno.h>
+#ifdef _WIN32
 #include <Windows.h>
+#else
+inline errno_t fopen_s(FILE **f, const char *name, const char *mode) {
+    errno_t ret = 0;
+    assert(f);
+    *f = fopen(name, mode);
+    /* Can't be sure about 1-to-1 mapping of errno and MS' errno_t */
+    if (!*f)
+        ret = errno;
+    return ret;
+}
 #endif 
 
 
@@ -96,7 +105,7 @@ namespace Utils
 					j = i + 1;
 				}
 			}
-			strcpy_s(fileName, MAX_PATH, &filePath[j]);
+			strncpy(fileName, &filePath[j], MAX_PATH);
 		}
 
 		/// <summary>
@@ -118,7 +127,7 @@ namespace Utils
 					j = i + 1;
 				}
 			}
-			strcpy_s(path, MAX_PATH, filePath);
+			strncpy(path, filePath, MAX_PATH);
 			memcpy(path + j, "\0", 1);
 		}
 
@@ -136,7 +145,7 @@ namespace Utils
 			int i = 0;
 			for (i = 0; i < strlen(fileName); i++)
 				if (fileName[i] == '.') break;
-			strcpy_s(fileNameWithoutExtension, MAX_PATH, fileName);
+			strncpy(fileNameWithoutExtension, fileName, MAX_PATH);
 			memcpy(fileNameWithoutExtension + i, "\0", 1);
 		}
 	};
